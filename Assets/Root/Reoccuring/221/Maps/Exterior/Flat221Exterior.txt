@@ -1,0 +1,2 @@
+Exit Exit221: M10 > Hallway L15
+Exit ExitSpeedy: Q10 > Speedy M16

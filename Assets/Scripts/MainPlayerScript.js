@@ -5,20 +5,45 @@ class MainPlayerScript extends MonoBehaviour
 	var speed = 1f;
 	var direction = "Down";
 	var isCameraFollow = true;
+	var spritesheet : Texture2D;
+
+	var disableInputs = false;
 
 	private var isWalking = false;
-	private var isInteracting = false;
+	private var isKeyUpAfterWalking = true;
+
+	private var isChangingLocation = false;
+	private var currentLocation : GameObject;
+	private var locationsDict = Dictionary.<String, GameObject>();
 
 	private var map : MapBaseScript;
+	private var animscript : AnimationBaseScript;
 	private var animator : Animator;
+	private var sr : SpriteRenderer;
+	
+	private var sprites : Sprite[];
+	private var alternateWalk = false;
+
 	private var fractionMoved = 0f;
 	private var moveVector : Vector3;
 	private var origin : Vector3;
 
 	function Awake()
 	{
-		map = GameObject.Find("Map").GetComponent(MapBaseScript);
 		animator = GetComponent(Animator);
+		animscript = GetComponent(AnimationBaseScript);
+		sr = GetComponent(SpriteRenderer);
+
+		var t : Transform;
+		for (t in GameObject.Find("Locations").transform)
+		{
+			var l = t.gameObject;
+			locationsDict[l.name] = l;
+			if (l.activeInHierarchy)
+				currentLocation = l;
+		}
+		var cameraZoom = 2.0;
+        Camera.main.orthographicSize = Screen.height / (2.0 * 32.0 * cameraZoom);
 	}
 
 	function Start ()
@@ -26,20 +51,33 @@ class MainPlayerScript extends MonoBehaviour
 		animator.speed = speed;
 		animator.SetTrigger("Idle" + direction);
 		if (isCameraFollow)
-		{
-			var newCameraPos = transform.position;
-			newCameraPos.x += 0.5f;
-			newCameraPos.y -= 0.5f;
-			newCameraPos.z = -10f;
-			Camera.main.transform.position = newCameraPos;
-		}
+			centerCamera();
+		map = GameObject.Find("Map").GetComponent(MapBaseScript);
+		yield WaitForSeconds(0.2);
+		doWalk("Down", true);
 	}
 	
 	function Update ()
 	{
-		if (!isWalking && !isInteracting) checkInput();
+		// Check for directional key releases
+		if (Input.GetKeyUp(KeyCode.RightArrow)
+				|| Input.GetKeyUp(KeyCode.DownArrow)
+				|| Input.GetKeyUp(KeyCode.UpArrow)
+				|| Input.GetKeyUp(KeyCode.LeftArrow))
+			isKeyUpAfterWalking = true;
+		else if (!Input.GetKey(KeyCode.RightArrow)
+				&& !Input.GetKey(KeyCode.DownArrow)
+				&& !Input.GetKey(KeyCode.UpArrow)
+				&& !Input.GetKey(KeyCode.LeftArrow))
+			isKeyUpAfterWalking = true;
 
-		if (isWalking) animateWalk();
+		// Check for active inputs
+		if (!isWalking && !isChangingLocation && !disableInputs)
+			checkInput();
+
+		// Do any remaining animations
+		if (isWalking)
+			animateWalk();
 	}
 
 	function checkInput()
@@ -54,46 +92,158 @@ class MainPlayerScript extends MonoBehaviour
 			doWalk("Left");
 		else if (Input.GetKeyDown(KeyCode.Space))
 		{
-			name = map.checkInteract(transform.position, direction);
+			var name = map.checkInteract(transform.position, direction);
 			if (name != "")
-			{
-				map.Invoke (name, 0f);
-			}
+				map.StartCoroutine(name);
+		}
+		else if (Input.GetKeyDown(KeyCode.Tab))
+		{
+			// TESTING AREA
+			var anim = animscript.spriteSkins[0].anims["Standing"];
+			var index = UnityEngine.Random.Range(0, anim.sprites.GetLength(1));
+			Debug.Log(anim.sprites[anim.row, index]);
+			sr.sprite = anim.sprites[anim.row, index];
+			yield StartCoroutine(anim.run(""));
+			Debug.Log("Finished");
 		}
 	}
 
 	function doWalk(input : String)
 	{
-		direction = input;
-		moveVector = new Vector3();
-		switch (direction)
+		doWalk(input, false);
+	}
+
+	function doWalk(input : String, bypass : boolean)
+	{
+		if (isKeyUpAfterWalking)
 		{
-		case "Up":
-			moveVector.y = 1;
-			break;
-		case "Right":
-			moveVector.x = 1;
-			break;
-		case "Down":
-			moveVector.y = -1;
-			break;
-		case "Left":
-			moveVector.x = -1;
-			break;
+			isKeyUpAfterWalking = false;
+			direction = input;
 		}
 
-		var dest = transform.position + moveVector;
-		if (map.isWalkable(dest, direction))
+		if (bypass)
+			direction = input;
+
+		var dest = map.nextPos(transform.position, direction);
+
+		if (!bypass)
 		{
-			isWalking = true;
-			fractionMoved = 0f;
-			origin = transform.position;
-			animator.SetTrigger("Walk" + direction);
+			if (!map.isWalkable(dest, direction))
+			{
+				animator.SetTrigger("Idle" + direction);
+				return;
+			}
+				
+			var name = map.checkPreEvent(transform.position, direction);
+			if (name != "")
+			{
+				map.StartCoroutine(name, 0f);
+				return;
+			}
+		}
+
+		isWalking = true;
+		moveVector = dest - transform.position;
+		fractionMoved = 0f;
+		origin = transform.position;
+		animator.SetTrigger("Walk" + direction);
+	}
+
+	function fadeOutAudio(location : GameObject)
+	{
+		var audiolist = location.GetComponentsInChildren(AudioScript);
+		var audio : AudioScript;
+		for (audio in audiolist)
+		{
+			if (audio.fadeOut)
+				audio.doFadeOut();
+			else
+				audio.changeCurrentVolume(0f);
+		}
+		
+		var stillFadingOut = true;
+		while (stillFadingOut)
+		{
+			stillFadingOut = false;
+			for (audio in audiolist)
+			{
+				if (audio.currentVolume() > 0)
+					stillFadingOut = true;
+			}
+			yield;
+		}
+	}
+
+	function fadeOutLocation(location : GameObject)
+	{
+//		var thismap = GameObject.Find("Map");
+//		var thischar = GameObject.Find("Characters");
+//
+//		sr.enabled = false;
+//		thismap.SetActive(false);
+//		thischar.SetActive(false);
+//
+//		yield fadeOutAudio(location);
+//
+//		location.SetActive(false);
+//		thismap.SetActive(true);
+//		thischar.SetActive(true);
+		sr.enabled = false;
+		location.SetActive(false);
+		yield;
+	}
+
+	function fadeInLocation(location : GameObject)
+	{
+		location.SetActive(true);
+		sr.enabled = true;
+		yield;
+	}
+
+	function changeLocation(location : String, coords : String)
+	{
+		isChangingLocation = true;
+		if (locationsDict.ContainsKey(location))
+		{
+			if (locationsDict[location] != currentLocation)
+			{
+				yield fadeOutLocation(currentLocation);
+				currentLocation = locationsDict[location];
+			}
+
+			var x : int = coords[0];
+			var a : int = 'A'[0];
+			x -= a;
+			var y : int = int.Parse(coords[1:]);
+			var newPos = transform.position;
+			newPos.x = x;
+			newPos.y = -y + 1;
+			transform.position = newPos;
+			centerCamera();
+
+			if (!currentLocation.activeInHierarchy)
+			{
+				yield fadeInLocation(currentLocation);
+				map = GameObject.Find("Map").GetComponent(MapBaseScript);
+			}
+			else
+				yield;
 		}
 		else
 		{
-			animator.SetTrigger("Idle" + direction);
+			Debug.Log("Location don't exist: " + location);
+			yield;
 		}
+		isChangingLocation = false;
+	}
+
+	function centerCamera()
+	{
+		var newCameraPos = transform.position;
+		newCameraPos.x += 0.5f;
+		newCameraPos.y -= 0.5f;
+		newCameraPos.z = Camera.main.transform.position.z;
+		Camera.main.transform.position = newCameraPos;
 	}
 
 	function animateWalk()
@@ -101,6 +251,19 @@ class MainPlayerScript extends MonoBehaviour
 		fractionMoved += Time.deltaTime * speed;
 		if (fractionMoved > 1f)
 			fractionMoved = 1f;
+
+//		if (fractionMoved < 0.25)
+//		{
+//			sr.sprite = sprites[1];
+//		}
+//		else if (fractionMoved < 0.75)
+//		{
+//			sr.sprite = sprites[0];
+//		}
+//		else
+//		{
+//			sr.sprite = sprites[1];
+//		}
 
 		// 10, 8, 6, 8
 		var transformedFractionMoved = 0f;
@@ -115,22 +278,34 @@ class MainPlayerScript extends MonoBehaviour
 		transform.position = origin + moveVector * transformedFractionMoved;
 
 		if (isCameraFollow)
-		{
-			var newCameraPos = transform.position;
-			newCameraPos.x += 0.5f;
-			newCameraPos.y -= 0.5f;
-			newCameraPos.z = -10f;
-			Camera.main.transform.position = newCameraPos;
-		}
+			centerCamera();
 
 		if (fractionMoved == 1f)
 		{
 			isWalking = false;
 			animator.SetBool("AlternateWalk", !animator.GetBool("AlternateWalk"));
-			name = map.checkEvent(transform.position, direction);
+
+			var name = map.checkPostEvent(transform.position, direction);
+			if (name != "")
+				map.StartCoroutine(name);
+
+			name = map.checkExit(transform.position, direction);
 			if (name != "")
 			{
-				map.Invoke (name, 0f);
+				var tokens = name.Split();
+				var methodInfo = typeof(map).GetMethod(tokens[0]);
+				var success = true;
+				if (methodInfo)
+					success = methodInfo.Invoke(map, []);
+				if (success == true)
+				{
+					var subtokens = tokens[2].Split('_'[0]);
+					disableInputs = true;
+					yield changeLocation(tokens[1], subtokens[0]);
+					if (subtokens.Length == 2)
+						doWalk(subtokens[1], true);
+					disableInputs = false;
+				}
 			}
 		}
 	}

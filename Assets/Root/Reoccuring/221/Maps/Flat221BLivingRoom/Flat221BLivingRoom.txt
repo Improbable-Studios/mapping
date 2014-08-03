@@ -1,0 +1,10 @@
+Exit ExitDownStairs: J3 > Hallway L6_Down
+Exit ExitBedroom: M1 > Flat221BBedroom P15
+
+PreEvent UpStairs: I5_Up
+PreEvent BedroomDoor: M2_Up
+
+Object Fridge: N2_Up
+Object JohnChair: O12_Up
+Object SherlockChair: O16_Down
+Object TV: P12_Right
