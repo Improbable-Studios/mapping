@@ -34,15 +34,15 @@ class Flat221BLivingRoom extends MapBaseScript
 	function BedroomDoor()
 	{
 		Debug.Log ("BedroomDoor event successful!");
-		player.doWalk("Up", true);
+		player.doWalk("North", true);
 	}
 
 	function UpStairs()
 	{
 		player.disableInputs = true;
-		player.doWalk("Up", true);
+		player.doWalk("North", true);
 		yield ScreenFaderScript.fadeOut(0.5f, Color.black);
-		player.doWalk("Down", true);
+		player.doWalk("South", true);
 		yield ScreenFaderScript.fadeIn(0.5f);
 		player.disableInputs = false;
 	}

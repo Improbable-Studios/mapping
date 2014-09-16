@@ -1,6 +1,8 @@
 fileFormatVersion: 2
 guid: 6c4fc07da44284b18ad6c48235ebf5e7
 TextureImporter:
+  fileIDToRecycleName:
+    21300000: Idle - Standing
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -35,6 +37,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 1
   spritePivot: {x: .5, y: .5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spritePixelsToUnits: 32
   alphaIsTransparency: 1
   textureType: 8
@@ -54,6 +57,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_1
       rect:
         serializedVersion: 2
@@ -63,6 +67,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_2
       rect:
         serializedVersion: 2
@@ -72,6 +77,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_3
       rect:
         serializedVersion: 2
@@ -81,6 +87,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_4
       rect:
         serializedVersion: 2
@@ -90,6 +97,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_5
       rect:
         serializedVersion: 2
@@ -99,6 +107,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_6
       rect:
         serializedVersion: 2
@@ -108,6 +117,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_7
       rect:
         serializedVersion: 2
@@ -117,6 +127,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_8
       rect:
         serializedVersion: 2
@@ -126,6 +137,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_9
       rect:
         serializedVersion: 2
@@ -135,6 +147,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_10
       rect:
         serializedVersion: 2
@@ -144,6 +157,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_11
       rect:
         serializedVersion: 2
@@ -153,6 +167,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_12
       rect:
         serializedVersion: 2
@@ -162,6 +177,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_13
       rect:
         serializedVersion: 2
@@ -171,6 +187,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_14
       rect:
         serializedVersion: 2
@@ -180,6 +197,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_15
       rect:
         serializedVersion: 2
@@ -189,6 +207,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_16
       rect:
         serializedVersion: 2
@@ -198,6 +217,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_17
       rect:
         serializedVersion: 2
@@ -207,6 +227,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_18
       rect:
         serializedVersion: 2
@@ -216,6 +237,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_19
       rect:
         serializedVersion: 2
@@ -225,6 +247,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_20
       rect:
         serializedVersion: 2
@@ -234,6 +257,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_21
       rect:
         serializedVersion: 2
@@ -243,6 +267,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_22
       rect:
         serializedVersion: 2
@@ -252,6 +277,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_23
       rect:
         serializedVersion: 2
@@ -261,6 +287,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_24
       rect:
         serializedVersion: 2
@@ -270,6 +297,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_25
       rect:
         serializedVersion: 2
@@ -279,6 +307,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_26
       rect:
         serializedVersion: 2
@@ -288,6 +317,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_27
       rect:
         serializedVersion: 2
@@ -297,6 +327,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_28
       rect:
         serializedVersion: 2
@@ -306,6 +337,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_29
       rect:
         serializedVersion: 2
@@ -315,6 +347,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_30
       rect:
         serializedVersion: 2
@@ -324,6 +357,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_31
       rect:
         serializedVersion: 2
@@ -333,6 +367,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_32
       rect:
         serializedVersion: 2
@@ -342,6 +377,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_33
       rect:
         serializedVersion: 2
@@ -351,6 +387,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_34
       rect:
         serializedVersion: 2
@@ -360,6 +397,7 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
     - name: Idle - Standing_35
       rect:
         serializedVersion: 2
@@ -369,5 +407,6 @@ TextureImporter:
         height: 32
       alignment: 1
       pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
   spritePackingTag: 
   userData: 

@@ -1,6 +1,0 @@
-Event ExitUp: F17
-Event ExitDown: G17
-
-Object Fridge: K16_Up
-
-Obstacle Table: J19_Left K18 K19_Left K20 L18 L19_Left L20

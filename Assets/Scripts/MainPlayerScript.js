@@ -3,9 +3,8 @@
 class MainPlayerScript extends MonoBehaviour
 {
 	var speed = 1f;
-	var direction = "Down";
+	var direction = "South";
 	var isCameraFollow = true;
-	var spritesheet : Texture2D;
 
 	var disableInputs = false;
 
@@ -17,21 +16,17 @@ class MainPlayerScript extends MonoBehaviour
 	private var locationsDict = Dictionary.<String, GameObject>();
 
 	private var map : MapBaseScript;
-	private var animscript : AnimationBaseScript;
-	private var animator : Animator;
+	private var animScript : AnimationManagerScript;
+	private var anim : AnimatedObject;
 	private var sr : SpriteRenderer;
 	
-	private var sprites : Sprite[];
-	private var alternateWalk = false;
-
 	private var fractionMoved = 0f;
 	private var moveVector : Vector3;
 	private var origin : Vector3;
 
 	function Awake()
 	{
-		animator = GetComponent(Animator);
-		animscript = GetComponent(AnimationBaseScript);
+		animScript = GameObject.Find("Manager").GetComponent(AnimationManagerScript);
 		sr = GetComponent(SpriteRenderer);
 
 		var t : Transform;
@@ -48,13 +43,13 @@ class MainPlayerScript extends MonoBehaviour
 
 	function Start ()
 	{
-		animator.speed = speed;
-		animator.SetTrigger("Idle" + direction);
+		anim = animScript.getAnimatedObject(sr, "john", "Jacket");
+		animScript.StartCoroutine(anim.run("Stand", [direction]));
 		if (isCameraFollow)
 			centerCamera();
 		map = GameObject.Find("Map").GetComponent(MapBaseScript);
 		yield WaitForSeconds(0.2);
-		doWalk("Down", true);
+		doWalk("South", true);
 	}
 	
 	function Update ()
@@ -83,13 +78,13 @@ class MainPlayerScript extends MonoBehaviour
 	function checkInput()
 	{
 		if (Input.GetKey(KeyCode.RightArrow))
-			doWalk("Right");
+			doWalk("East");
 		else if (Input.GetKey(KeyCode.DownArrow))
-			doWalk("Down");
+			doWalk("South");
 		else if (Input.GetKey(KeyCode.UpArrow))
-			doWalk("Up");
+			doWalk("North");
 		else if (Input.GetKey(KeyCode.LeftArrow))
-			doWalk("Left");
+			doWalk("West");
 		else if (Input.GetKeyDown(KeyCode.Space))
 		{
 			var name = map.checkInteract(transform.position, direction);
@@ -99,12 +94,9 @@ class MainPlayerScript extends MonoBehaviour
 		else if (Input.GetKeyDown(KeyCode.Tab))
 		{
 			// TESTING AREA
-			var anim = animscript.spriteSkins[0].anims["Standing"];
-			var index = UnityEngine.Random.Range(0, anim.sprites.GetLength(1));
-			Debug.Log(anim.sprites[anim.row, index]);
-			sr.sprite = anim.sprites[anim.row, index];
-			yield StartCoroutine(anim.run(""));
-			Debug.Log("Finished");
+			var animName = anim.listOfAnimations()[Random.Range(0, anim.skin.anims.Count)];
+			Debug.Log(animName);
+			yield animScript.StartCoroutine(anim.run(animName, ["Random"]));
 		}
 	}
 
@@ -130,7 +122,7 @@ class MainPlayerScript extends MonoBehaviour
 		{
 			if (!map.isWalkable(dest, direction))
 			{
-				animator.SetTrigger("Idle" + direction);
+				animScript.StartCoroutine(anim.run("Stand", [direction]));
 				return;
 			}
 				
@@ -146,7 +138,7 @@ class MainPlayerScript extends MonoBehaviour
 		moveVector = dest - transform.position;
 		fractionMoved = 0f;
 		origin = transform.position;
-		animator.SetTrigger("Walk" + direction);
+		animScript.StartCoroutine(anim.run("Walk", [direction]));
 	}
 
 	function fadeOutAudio(location : GameObject)
@@ -252,19 +244,6 @@ class MainPlayerScript extends MonoBehaviour
 		if (fractionMoved > 1f)
 			fractionMoved = 1f;
 
-//		if (fractionMoved < 0.25)
-//		{
-//			sr.sprite = sprites[1];
-//		}
-//		else if (fractionMoved < 0.75)
-//		{
-//			sr.sprite = sprites[0];
-//		}
-//		else
-//		{
-//			sr.sprite = sprites[1];
-//		}
-
 		// 10, 8, 6, 8
 		var transformedFractionMoved = 0f;
 		if (fractionMoved < 0.25)
@@ -283,8 +262,6 @@ class MainPlayerScript extends MonoBehaviour
 		if (fractionMoved == 1f)
 		{
 			isWalking = false;
-			animator.SetBool("AlternateWalk", !animator.GetBool("AlternateWalk"));
-
 			var name = map.checkPostEvent(transform.position, direction);
 			if (name != "")
 				map.StartCoroutine(name);

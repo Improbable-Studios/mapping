@@ -11,7 +11,6 @@ GameObject:
   - 114: {fileID: 11400000}
   - 212: {fileID: 21200000}
   - 95: {fileID: 9500000}
-  - 114: {fileID: 11400002}
   m_Layer: 0
   m_Name: JohnWatson
   m_TagString: Player
@@ -26,24 +25,26 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 100000}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6, y: -21, z: 0}
+  m_LocalPosition: {x: 8, y: -2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
+  m_RootOrder: 0
 --- !u!95 &9500000
 Animator:
-  serializedVersion: 2
+  serializedVersion: 3
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 100000}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: 942f3cf8c95ae411d982258bcb0e68ce, type: 2}
   m_CullingMode: 0
+  m_UpdateMode: 0
   m_ApplyRootMotion: 0
-  m_AnimatePhysics: 0
   m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -60,36 +61,6 @@ MonoBehaviour:
   isCameraFollow: 1
   spritesheet: {fileID: 0}
   disableInputs: 0
---- !u!114 &11400002
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 51712b4ed66754bdb91cf94a8c4a09a4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 1
-  spriteSkins:
-  - name: Jacket
-    sheets:
-    - {fileID: 2800000, guid: c8c3c972556794ac99f83dc48bc2e130, type: 3}
-    - {fileID: 2800000, guid: 18632303d0baa4e1a91ec31ca0487949, type: 3}
-    - {fileID: 2800000, guid: 355265032cd9c42b09478fda73e80f84, type: 3}
-    - {fileID: 2800000, guid: 3bba564552cfd4184ba4b06c5aabecf0, type: 3}
-    - {fileID: 2800000, guid: eeaad1e5aa72345b1b323511605057ee, type: 3}
-    - {fileID: 2800000, guid: 9a9fcc0de4a4b4d838482b8019981e72, type: 3}
-    - {fileID: 2800000, guid: 6c4fc07da44284b18ad6c48235ebf5e7, type: 3}
-  - name: Oatmeal Jumper
-    sheets:
-    - {fileID: 2800000, guid: 7b077c13e945d4207b8e026773cc445e, type: 3}
-    - {fileID: 2800000, guid: 98406c46a6dd14553ad4af6f0bcfc921, type: 3}
-    - {fileID: 2800000, guid: f938d56631c024b618254735e0d050c2, type: 3}
-    - {fileID: 2800000, guid: 2b5ea78e3239848ccbdb34a3175481ba, type: 3}
-    - {fileID: 2800000, guid: 6c584bbf960454bc9b7763d82f7fc247, type: 3}
-  minimumSpriteSize: 32
 --- !u!212 &21200000
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -108,9 +79,8 @@ SpriteRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayer: -3
-  m_SortingOrder: 0
   m_SortingLayerID: 1136414661
+  m_SortingOrder: 0
   m_Sprite: {fileID: 21300074, guid: 6bb4256bc796a4fdda8a3e7bd7786f2f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1001 &100100000

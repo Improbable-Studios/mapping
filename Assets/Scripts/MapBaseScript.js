@@ -88,16 +88,16 @@ class MapBaseScript extends MonoBehaviour
 		var newPos = pos;
 		switch (direction)
 		{
-		case "Up":
+		case "North":
 			newPos.y++;
 			break;
-		case "Down":
+		case "South":
 			newPos.y--;
 			break;
-		case "Left":
+		case "West":
 			newPos.x--;
 			break;
-		case "Right":
+		case "East":
 			newPos.x++;
 			break;
 		}
@@ -155,13 +155,13 @@ class MapBaseScript extends MonoBehaviour
 		}
 		else
 		{
-			if (direction == "Up" && color.b > 0f)
+			if (direction == "North" && color.b > 0f)
 				return true;
-			if (direction == "Right" && color.g > 0.0f && color.g < 0.4f)
+			if (direction == "East" && color.g > 0.0f && color.g < 0.4f)
 				return true;
-			if (direction == "Down" && color.r > 0f)
+			if (direction == "South" && color.r > 0f)
 				return true;
-			if (direction == "Left" && color.g > 0.35f)
+			if (direction == "West" && color.g > 0.35f)
 				return true;
 			return false;
 		}
