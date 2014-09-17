@@ -43,9 +43,7 @@ class MainPlayerScript extends MonoBehaviour
 
 	function Start ()
 	{
-		anim = animScript.getAnimatedObject(sr, "john", "Jacket");
-		anim.speed = speed;
-		animScript.StartCoroutine(anim.run("Stand", [direction]));
+		initAnim("john", "Jacket");
 		if (isCameraFollow)
 			centerCamera();
 		map = GameObject.Find("Map").GetComponent(MapBaseScript);
@@ -74,6 +72,17 @@ class MainPlayerScript extends MonoBehaviour
 		// Do any remaining animations
 		if (isWalking)
 			animateWalk();
+	}
+
+	function initAnim(character : String, skin : String)
+	{
+		if (character == "Random")
+			character = animScript.listOfCharacters()[Random.Range(0, animScript.animations.Count)];
+		if (skin == "Random")
+			skin = animScript.listOfSkins(character)[Random.Range(0, animScript.animations[character].Count)];
+		anim = animScript.getAnimatedObject(sr, character, skin);
+		anim.speed = speed;
+//		animScript.StartCoroutine(anim.run("Stand", [direction]));
 	}
 
 	function checkInput()
@@ -123,7 +132,7 @@ class MainPlayerScript extends MonoBehaviour
 		{
 			if (!map.isWalkable(dest, direction))
 			{
-				animScript.StartCoroutine(anim.run("Stand", [direction]));
+//				animScript.StartCoroutine(anim.run("Stand", [direction]));
 				return;
 			}
 				

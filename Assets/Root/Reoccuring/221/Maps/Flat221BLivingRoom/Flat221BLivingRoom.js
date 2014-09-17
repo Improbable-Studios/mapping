@@ -42,6 +42,7 @@ class Flat221BLivingRoom extends MapBaseScript
 		player.disableInputs = true;
 		player.doWalk("North", true);
 		yield ScreenFaderScript.fadeOut(0.5f, Color.black);
+		player.initAnim("Random", "Random");
 		player.doWalk("South", true);
 		yield ScreenFaderScript.fadeIn(0.5f);
 		player.disableInputs = false;

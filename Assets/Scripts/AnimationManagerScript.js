@@ -419,14 +419,7 @@ class AnimatedObject extends Object
 
 	function listOfSkins()
 	{
-		var res = new String[manager.animations[name].Count];
-		var i = 0;
-		for (var k in manager.animations[name].Keys)
-		{
-			res[i] = k;
-			i++;
-		}
-		return res;
+		return manager.listOfSkins(name);
 	}
 
 	function listOfAnimations()
@@ -520,8 +513,28 @@ class AnimationManagerScript extends MonoBehaviour
 		animations["sherlock"]["Coat"].loadTexture();
 	}
 
-	function Update ()
+	function listOfCharacters()
 	{
+		var res = new String[animations.Count];
+		var i = 0;
+		for (var k in animations.Keys)
+		{
+			res[i] = k;
+			i++;
+		}
+		return res;
+	}
+
+	function listOfSkins(character : String)
+	{
+		var res = new String[animations[character].Count];
+		var i = 0;
+		for (var k in animations[character].Keys)
+		{
+			res[i] = k;
+			i++;
+		}
+		return res;
 	}
 
 	function getAnimatedObject(sr : SpriteRenderer, character : String, skinName : String)
