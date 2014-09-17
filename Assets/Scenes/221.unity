@@ -1381,7 +1381,8 @@ Prefab:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 9500000, guid: da8a033a5955645b588d99afa153116e, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: da8a033a5955645b588d99afa153116e, type: 2}
   m_RootGameObject: {fileID: 2135468064}
   m_IsPrefabParent: 0
@@ -3754,7 +3755,6 @@ GameObject:
   - 4: {fileID: 2135468065}
   - 114: {fileID: 2135468068}
   - 212: {fileID: 2135468067}
-  - 95: {fileID: 2135468066}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -3774,22 +3774,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
---- !u!95 &2135468066
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 9500000, guid: da8a033a5955645b588d99afa153116e,
-    type: 2}
-  m_PrefabInternal: {fileID: 587789665}
-  m_GameObject: {fileID: 2135468064}
-  m_Enabled: 0
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 942f3cf8c95ae411d982258bcb0e68ce, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
 --- !u!212 &2135468067
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3828,5 +3812,4 @@ MonoBehaviour:
   speed: 5
   direction: Down
   isCameraFollow: 1
-  spritesheet: {fileID: 0}
   disableInputs: 0

@@ -2,6 +2,7 @@
 
 import System.Collections.Generic;
 import System.IO;
+import SimpleJSON;
 
 enum AnimType{Forward, Directional, Moving, Idle, Unknown};
 enum IdleType{	FacingSouthLookRight, 	FacingSouthLookAhead, 	FacingSouthLookLeft,
@@ -312,15 +313,20 @@ class AnimationItem extends Object
 class SpriteSkin extends Object
 {
 	var name : String;
-	var path : DirectoryInfo;
+	var path : String;
+	var pnglist : String[];
 	var sheets : Texture2D[];
 	var anims = Dictionary.<String, AnimationItem>();
 	var minimumSpriteSize = 32;
 
-	function SpriteSkin(name_ : String, path_ : DirectoryInfo)
+	function SpriteSkin(name_ : String, path_ : String, pnglist_ : String[])
 	{
 		name = name_;
-		path = path_;		
+		path = path_;
+		pnglist = pnglist_;
+//		Debug.Log(name + " :: " + pnglist.Length);
+//		for (p in pnglist)
+//			Debug.Log(p);
 	}
 	
 	function isTextureLoaded()
@@ -333,15 +339,11 @@ class SpriteSkin extends Object
 		if (isTextureLoaded())
 			return;
 
-		var allSheetPath = Directory.GetFiles(path.FullName, "*.png");
-		sheets = new Texture2D[allSheetPath.Length];
+		sheets = new Texture2D[pnglist.Length];
 
-	    for (var i=0; i<allSheetPath.Length; i++)
+	    for (var i=0; i<pnglist.Length; i++)
 	    {
-	    	var sheetInfo = new DirectoryInfo(allSheetPath[i]);
-	    	var startIndex = Application.dataPath.Length + 11; // length of "/Resources/"
-	    	var lastIndex = sheetInfo.FullName.Length - sheetInfo.Extension.Length;
-	    	var resourceName = sheetInfo.FullName[startIndex:lastIndex];
+	    	var resourceName = path + pnglist[i];
 	    	var texture = Resources.Load(resourceName);
 	    	sheets[i] = texture;
 
@@ -473,7 +475,11 @@ class AnimatedObject extends Object
 			yield;
 		}
 		if (currentAnimation && currentAnimation.isRunning)
+		{
 			yield manager.StartCoroutine(currentAnimation.stop());
+//			manager.StopAllCoroutines();
+			currentAnimation.isRunning = false;
+		}
 		currentAnimation = skin.anims[animation];
 		yield manager.StartCoroutine(currentAnimation.run(sr, speed * speedModifier, options));
 	}
@@ -484,30 +490,32 @@ class AnimationManagerScript extends MonoBehaviour
 	var pathToCharacters = "characters";
 
 	var animations = Dictionary.<String, Dictionary.<String, SpriteSkin> >();
+	
+	private var resource : ResourceManagerScript;
 
 	function Awake ()
 	{
-		var allPaths = Directory.GetDirectories(Application.dataPath + "/Resources/" + pathToCharacters, "*");
-
-	    for (dir in allPaths)
-	    {
-	    	var dirInfo = new DirectoryInfo(dir);
-	        animations[dirInfo.Name] = new Dictionary.<String, SpriteSkin>();
-		    for (subdir in Directory.GetDirectories(dirInfo.FullName + "/Sprites", "*"))
-		    {
-		    	var subdirInfo = new DirectoryInfo(subdir);
-		    	animations[dirInfo.Name][subdirInfo.Name] = new SpriteSkin(subdirInfo.Name, subdirInfo);
-		    }
-		    if (Directory.GetFiles(dirInfo.FullName + "/Sprites", "*.png").Length > 0)
-		    {
-		    	var defaultDirInfo = new DirectoryInfo(dirInfo.FullName + "/Sprites");
-		   		animations[dirInfo.Name]["Default"] = new SpriteSkin("Default", defaultDirInfo);
-		   	}
-	    }
+		resource = GetComponent(ResourceManagerScript);
 	}
 
 	function Start ()
 	{
+	    for (dir in resource.getDirectoriesInPath(pathToCharacters))
+	    {
+	        animations[dir] = new Dictionary.<String, SpriteSkin>();
+		    var path = pathToCharacters + "/" + dir + "/Sprites/";
+	    	var pnglist = resource.getFilesOfType(path, ".png");
+		    if (pnglist.Length > 0)
+		   		animations[dir]["Default"] = new SpriteSkin("Default", path, pnglist);
+
+		    for (subdir in resource.getDirectoriesInPath(path))
+		    {
+		    	var subpath = path + subdir + "/";
+		    	var subpnglist = resource.getFilesOfType(subpath, ".png");
+		    	animations[dir][subdir] = new SpriteSkin(subdir, subpath, subpnglist);
+		    }
+	    }
+
 		animations["john"]["Jacket"].loadTexture();
 		animations["sherlock"]["Coat"].loadTexture();
 	}

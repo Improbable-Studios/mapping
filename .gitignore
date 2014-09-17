@@ -4,6 +4,7 @@
 Temp/
 Library/
 Resources/
+Resources.meta
 
 # ===================================== #
 # Visual Studio / MonoDevelop generated #

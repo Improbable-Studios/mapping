@@ -44,6 +44,7 @@ class MainPlayerScript extends MonoBehaviour
 	function Start ()
 	{
 		anim = animScript.getAnimatedObject(sr, "john", "Jacket");
+		anim.speed = speed;
 		animScript.StartCoroutine(anim.run("Stand", [direction]));
 		if (isCameraFollow)
 			centerCamera();
@@ -96,7 +97,7 @@ class MainPlayerScript extends MonoBehaviour
 			// TESTING AREA
 			var animName = anim.listOfAnimations()[Random.Range(0, anim.skin.anims.Count)];
 			Debug.Log(animName);
-			yield animScript.StartCoroutine(anim.run(animName, ["Random"]));
+			yield StartCoroutine(anim.run(animName, ["Random"]));
 		}
 	}
 
@@ -240,7 +241,7 @@ class MainPlayerScript extends MonoBehaviour
 
 	function animateWalk()
 	{
-		fractionMoved += Time.deltaTime * speed;
+		fractionMoved += Time.deltaTime * speed * 5.0;
 		if (fractionMoved > 1f)
 			fractionMoved = 1f;
 
