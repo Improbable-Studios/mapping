@@ -9,13 +9,14 @@ public class ResourceManagerEditor extends Editor
     {
         DrawDefaultInspector();
         
-        var myScript : ResourceManagerScript = target;
+        var myScript : ResourceManagerScript = target as ResourceManagerScript;
         if(GUILayout.Button("Generate JSON Directory"))
         {
 			var json = myScript.generateJSON();
 			var f = File.CreateText(Application.dataPath + "/Resources/directory.json");
 			f.Write(json);
 			f.Close();
+			AssetDatabase.Refresh();
        	}
     }
 }

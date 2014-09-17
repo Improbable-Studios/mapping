@@ -29,9 +29,9 @@ class MainPlayerScript extends MonoBehaviour
 		animScript = GameObject.Find("Manager").GetComponent(AnimationManagerScript);
 		sr = GetComponent(SpriteRenderer);
 
-		var t : Transform;
-		for (t in GameObject.Find("Locations").transform)
+		for (t_ in GameObject.Find("Locations").transform)
 		{
+			var t : Transform = t_ as Transform;
 			var l = t.gameObject;
 			locationsDict[l.name] = l;
 			if (l.activeInHierarchy)
@@ -155,8 +155,9 @@ class MainPlayerScript extends MonoBehaviour
 	{
 		var audiolist = location.GetComponentsInChildren(AudioScript);
 		var audio : AudioScript;
-		for (audio in audiolist)
+		for (audio_ in audiolist)
 		{
+			audio = audio_ as AudioScript;
 			if (audio.fadeOut)
 				audio.doFadeOut();
 			else
@@ -167,8 +168,9 @@ class MainPlayerScript extends MonoBehaviour
 		while (stillFadingOut)
 		{
 			stillFadingOut = false;
-			for (audio in audiolist)
+			for (audio_ in audiolist)
 			{
+				audio = audio_ as AudioScript;
 				if (audio.currentVolume() > 0)
 					stillFadingOut = true;
 			}
@@ -281,7 +283,7 @@ class MainPlayerScript extends MonoBehaviour
 			{
 				var tokens = name.Split();
 				var methodInfo = typeof(map).GetMethod(tokens[0]);
-				var success = true;
+				var success;
 				if (methodInfo)
 					success = methodInfo.Invoke(map, []);
 				if (success == true)

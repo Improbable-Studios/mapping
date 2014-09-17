@@ -1,7 +1,4 @@
-﻿import UnityEngine;
-import UnityEditor;
- 
-class TexturePreProcessor extends AssetPostprocessor
+﻿ class TexturePreProcessor extends AssetPostprocessor
 {
     function OnPreprocessTexture()
     {

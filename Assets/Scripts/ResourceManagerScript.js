@@ -13,7 +13,7 @@ function Awake()
 	if (Application.isEditor)
 		json = generateJSON();
 	else
-		json = JSONNode.Parse(directory.text);
+		json = JSONNode.Parse(directory.text) as JSONClass;
 }
 
 function generateJSON()
@@ -42,12 +42,12 @@ function recursiveDirectoryCrawl(J : JSONNode, dir : String)
 
 function getSubJSON(path : String)
 {
-	var cur = json;
+	var cur : JSONClass = json;
 	for (p in path.Split('/'[0]))
 	{
 		if (p == "")
 			continue;
-		cur = cur["/"][p];
+		cur = cur["/"][p] as JSONClass;
 	}
 	return cur;
 }
@@ -67,8 +67,9 @@ function getFilesOfType(path : String, extension : String)
 	var count = 0;
 	if (J["filelist"].Count > 0)
 	{
-		for (var f : String in J["filelist"])
+		for (f_ in J["filelist"])
 		{
+			var f : String = f_ as String;
 			if (f.EndsWith(extension))
 				count++;
 		}
@@ -77,8 +78,9 @@ function getFilesOfType(path : String, extension : String)
 	if (count > 0)
 	{
 		count = 0;
-		for (var f : String in J["filelist"])
+		for (f_ in J["filelist"])
 		{
+			f = f_ as String;
 			if (f.EndsWith(extension))
 			{
 				res[count] = f[0:f.Length-extension.Length];

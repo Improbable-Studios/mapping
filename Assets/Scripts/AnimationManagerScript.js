@@ -4,12 +4,11 @@ import System.Collections.Generic;
 import System.IO;
 import SimpleJSON;
 
-enum AnimType{Forward, Directional, Moving, Idle, Unknown};
+enum AnimType{Forward, Directional, Moving, Idle, ERROR};
 enum IdleType{	FacingSouthLookRight, 	FacingSouthLookAhead, 	FacingSouthLookLeft,
 				FacingWestLookLeft, 	FacingWestLookAhead, 	FacingWestLookRight,
 				FacingNorthLookLeft, 	FacingNorthLookAhead, 	FacingNorthLookRight,
-				FacingEastLookRight, 	FacingEastLookAhead, 	FacingEastLookLeft,
-				Unknown};
+				FacingEastLookRight, 	FacingEastLookAhead, 	FacingEastLookLeft};
 
 class AnimationItem extends Object
 {
@@ -53,6 +52,13 @@ class AnimationItem extends Object
 		sprites = sprites_;
 		row = row_;
 
+		if (row+1 > sprites.GetLength(0))
+		{
+			type = AnimType.ERROR;
+			Debug.Log("WARNING: Animation row size incorrect -- " + name_);
+			return;
+		}
+
 		types = new Array();
 		progressive = null;
 		stepping = null;
@@ -80,8 +86,9 @@ class AnimationItem extends Object
 			type = AnimType.Idle;
 		else
 		{
-			type = AnimType.Unknown;
+			type = AnimType.ERROR;
 			Debug.Log("WARNING: This animation type is not known - " + name);
+			return;
 		}
 
 		if (type == AnimType.Forward || type == AnimType.Directional)
@@ -103,8 +110,25 @@ class AnimationItem extends Object
 				else if (t[0] == 'R'[0])
 					repeating = indexArray;
 				else
-					Debug.Log("WARNING: Can't parse animation info -- " + name_);
+				{
+					type = AnimType.ERROR;
+					Debug.Log("WARNING: Can't parse Forward/Idle animation info -- " + name_);
+					return;
+				}
 			}
+			if (type == AnimType.Forward && sprites.GetLength(1) != currentIndex)
+			{
+				type = AnimType.ERROR;
+				Debug.Log("WARNING: Forward animation incorrect number of columns -- " + name_);
+				return;
+			}
+			if (type == AnimType.Directional && sprites.GetLength(1) != currentIndex * 4)
+			{
+				type = AnimType.ERROR;
+				Debug.Log("WARNING: Directional animation incorrect number of columns -- " + name_);
+				return;
+			}
+
 			if (progressive != null)
 			{
 				types.Add("Start");
@@ -119,9 +143,22 @@ class AnimationItem extends Object
 
 		if (type == AnimType.Idle)
 		{
+			if (sprites.GetLength(1) != 12)
+			{
+				type = AnimType.ERROR;
+				Debug.Log("WARNING: Idle animation incorrect number of columns -- " + name_);
+				return;
+			}
 			tokens = name.Split('_'[0]);
 			name = tokens[0];
-			var rowsize = tokens[1].Length;
+//			var rowsize = tokens[1].Length;
+			var rowsize = 3;
+			if (rowsize * (row+1) > sprites.GetLength(0))
+			{
+				type = AnimType.ERROR;
+				Debug.Log("WARNING: Idle animation row size incorrect -- " + name_);
+				return;
+			}
 			currentIndex = 0;
 			for (c in tokens[1])
 			{
@@ -138,20 +175,30 @@ class AnimationItem extends Object
 				else if (c == 'D'[0])
 					rowD = row * rowsize + 2;
 				else
-					Debug.Log("WARNING: Can't parse animation info -- " + name_);
+				{
+					type = AnimType.ERROR;
+					Debug.Log("WARNING: Can't parse Idle animation info -- " + name_);
+					return;
+				}
 				currentIndex++;
 			}
 		}
 
-		var size : int = sprites.GetLength(1) / 4;
 		if (type == AnimType.Moving)
 		{
+			if (sprites.GetLength(1) != 12)
+			{
+				type = AnimType.ERROR;
+				Debug.Log("WARNING: Moving animation incorrect number of columns -- " + name_);
+				return;
+			}
 			move1 = [1, 0, 0, 1];
 			move2 = [1, 2, 2, 1];
 		}
 
 		if (type == AnimType.Directional || type == AnimType.Moving)
 		{
+			var size : int = sprites.GetLength(1) / 4;
 			south = 0;
 			west = size;
 			north = size * 2;
@@ -230,7 +277,7 @@ class AnimationItem extends Object
 			if ("Random" in options)
 			{
 				if (types.length > 0)
-					options[0] = types[Random.Range(0, types.length)];
+ 					options[0] = types[Random.Range(0, types.length)] as String;
 			}
 
 			if ("Start" in options)
@@ -251,29 +298,35 @@ class AnimationItem extends Object
 			}
 			else if ("Loop" in options)
 			{
+				var ranAtLeastOnce = false;
+				i = 0;
 				if (repeating != null)
 				{
-					i = 0;
 					while (!breakRepeat)
 					{
 						sr.sprite = sprites[row, index_prefix + repeating[i]];
-						if (breakRepeatAfterFinish && i==0)
+						yield WaitForSeconds(wait);
+
+						if (breakRepeatAfterFinish && i==0 && ranAtLeastOnce)
 							break;
+						ranAtLeastOnce = true;
+
 						i++;
 						if (i >= repeating.Length)
 							i = 0;
-						yield WaitForSeconds(wait);
 					}
 				}
 				else if (stepping != null)
 				{
-					i = 0;
 					var index_increment = 1;
 					while (!breakRepeat)
 					{
 						sr.sprite = sprites[row, index_prefix + stepping[i]];
-						if (breakRepeatAfterFinish && i==0)
+						yield WaitForSeconds(wait);
+
+						if (breakRepeatAfterFinish && i==0 && ranAtLeastOnce)
 							break;
+						ranAtLeastOnce = true;
 	
 						i = i + index_increment;
 						if (i >= stepping.Length)
@@ -286,7 +339,6 @@ class AnimationItem extends Object
 							i = 1;
 							index_increment = 1;
 						}
-						yield WaitForSeconds(wait);
 					}
 				}
 			}
@@ -370,41 +422,99 @@ class SpriteSkin extends Object
 	{
 		return sheets != null;
 	}
-	
+
 	function loadTexture()
 	{
 		if (isTextureLoaded())
 			return;
 
-		sheets = new Texture2D[pnglist.Length];
-
+		var sheetsArray = new Array();
 	    for (var i=0; i<pnglist.Length; i++)
 	    {
-	    	var resourceName = path + pnglist[i];
-	    	var texture = Resources.Load(resourceName);
-	    	sheets[i] = texture;
+			var tokens = pnglist[i].Split('-'[0]);
+			if (tokens.Length != 2)
+			{
+				Debug.Log("WARNING: Incorrect number of '-' in animation name: " + pnglist[i]);
+				continue;
+			}
 
-			var tokens = texture.name.Split('-'[0]);
 			var animType : String = tokens[0].Trim();
 			var dimensionX : int = 1;
 			var dimensionY : int = 1;
 			var subtokens = animType.Split();
-			if (subtokens.Length > 1)
+			if (subtokens.Length > 2)
+			{
+				Debug.Log("WARNING: Incorrect format of animation type: " + pnglist[i]);
+				continue;
+			}
+
+			if (subtokens.Length == 2)
 			{
 				animType = subtokens[0].Trim();
 				var subsubtokens = subtokens[1].Split('x'[0]);
-				dimensionX = int.Parse(subsubtokens[0].Trim());
-				dimensionY = int.Parse(subsubtokens[1].Trim());
+				if (subsubtokens.Length != 2)
+				{
+					Debug.Log("WARNING: Incorrect format of animation size: " + pnglist[i]);
+					continue;
+				}
+				var res1 = int.TryParse(subsubtokens[0].Trim(), dimensionX);
+				var res2 = int.TryParse(subsubtokens[1].Trim(), dimensionY);
+				if (!res1 || !res2)
+				{
+					Debug.Log("WARNING: Incorrect value for animation size: " + pnglist[i]);
+					continue;
+				}
 			}
-			var animNames = tokens[1].Trim().Split();
+	    	var resourceName = path + pnglist[i];
+	    	var texture : Texture2D = Resources.Load(resourceName) as Texture2D;
+
+			if (texture.width % (minimumSpriteSize * dimensionX) > 0)
+			{
+				Debug.Log("WARNING: Pixel width incorrect: " + pnglist[i]);
+				continue;
+			}
+
+			if (texture.height % (minimumSpriteSize * dimensionY) > 0)
+			{
+				Debug.Log("WARNING: Pixel height incorrect: " + pnglist[i]);
+				continue;
+			}
+
 			var spriteSize : Vector2 = Vector2(minimumSpriteSize * dimensionX, minimumSpriteSize * dimensionY);
 			var allsprites = loadSpriteSheet(texture, spriteSize);
+
+			var animNames = tokens[1].Trim().Split();
+			var isError = false;
+			var tempArray = new Array();
 			for (var k=0; k<animNames.Length; k++)
 			{
 				var anim = AnimationItem(animNames[k], animType, spriteSize, allsprites, k);
+				if (anim.type == AnimType.ERROR)
+				{
+					isError = true;
+					break;
+				}
 				anims[anim.name] = anim;
+				tempArray.Add(anim.name);
 			}
+			if (isError)
+			{
+				for (t in tempArray)
+				{
+					var t_typed = t as String;
+					anims.Remove(t_typed);
+				}
+				continue;
+			}
+		    sheetsArray.Add(texture);
 	    }
+
+		if (sheetsArray.length > 0)
+		{
+			sheets = new Texture2D[sheetsArray.length];
+			for (i=0; i<sheetsArray.length; i++)
+				sheets[i] = sheetsArray[i] as Texture2D;
+		}
 	}
 	
 	function unloadTexture()
@@ -480,6 +590,11 @@ class AnimatedObject extends Object
 		}
 		skin = manager.animations[name][skinName];
 		skin.loadTexture();
+		if (!manager.animations[name][skinName].anims.ContainsKey("Walk"))
+		{
+			Debug.Log("WARNING: No 'Move - Walk' animation found -- " + skinName + " -- " + name);
+			return;
+		}
 	}
 
 	function run(animation : String)
@@ -518,6 +633,7 @@ class AnimatedObject extends Object
 class AnimationManagerScript extends MonoBehaviour
 {
 	var pathToCharacters = "characters";
+	var preLoadAllCharacters = true;
 
 	var animations = Dictionary.<String, Dictionary.<String, SpriteSkin> >();
 	
@@ -536,18 +652,48 @@ class AnimationManagerScript extends MonoBehaviour
 		    var path = pathToCharacters + "/" + dir + "/Sprites/";
 	    	var pnglist = resource.getFilesOfType(path, ".png");
 		    if (pnglist.Length > 0)
-		   		animations[dir]["Default"] = new SpriteSkin("Default", path, pnglist);
+		    {
+		    	if ("Moving - Walk" in pnglist)
+		    	{
+		    		var s : SpriteSkin = new SpriteSkin("Default", path, pnglist);
+		    		if (preLoadAllCharacters)
+		    		{
+				    	Debug.Log("Loading character and skin: " + dir + ", Default");
+		    			s.loadTexture();
+		    			if (s.anims.ContainsKey("Walk"))
+		    				animations[dir]["Default"] = s;
+		    		}
+		    		else
+			   			animations[dir]["Default"] = s;
+			   	}
+		    	else
+					Debug.Log("WARNING: Skin does not have Walk animation -- Default -- " + dir);
+		   	}
 
 		    for (subdir in resource.getDirectoriesInPath(path))
 		    {
 		    	var subpath = path + subdir + "/";
 		    	var subpnglist = resource.getFilesOfType(subpath, ".png");
-		    	animations[dir][subdir] = new SpriteSkin(subdir, subpath, subpnglist);
+		    	if ("Moving - Walk" in subpnglist)
+		    	{
+		    		s = new SpriteSkin(subdir, subpath, subpnglist);
+		    		if (preLoadAllCharacters)
+		    		{
+				    	Debug.Log("Loading character and skin: " + dir + ", " + subdir);
+		    			s.loadTexture();
+		    			if (s.anims.ContainsKey("Walk"))
+		    				animations[dir][subdir] = s;
+		    		}
+		    		else
+			   			animations[dir][subdir] = s;
+		    	}
+		    	else
+					Debug.Log("WARNING: Skin does not have Walk animation -- " + subdir + " -- " + dir);
 		    }
+		    
+		    if (animations[dir].Count == 0)
+		    	animations.Remove(dir);
 	    }
-
-		animations["john"]["Jacket"].loadTexture();
-		animations["sherlock"]["Coat"].loadTexture();
 	}
 
 	function listOfCharacters()
