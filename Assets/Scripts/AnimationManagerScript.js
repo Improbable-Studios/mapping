@@ -107,12 +107,13 @@ class AnimationItem extends Object
 			if (progressive != null)
 			{
 				types.Add("Start");
-				types.Add("End");
+				types.Add("Stop");
 			}
-			if (stepping != null)
-				types.Add("Step");
-			if (repeating != null)
-				types.Add("Repeat");
+			if (stepping != null || repeating != null)
+			{
+				types.Add("Loop");
+				types.Add("Hold");
+			}
 		}
 
 		if (type == AnimType.Idle)
@@ -239,7 +240,7 @@ class AnimationItem extends Object
 					yield WaitForSeconds(wait);
 				}
 			}
-			else if ("End" in options)
+			else if ("Stop" in options)
 			{
 				for (i=progressive.Length-1; i>=0 && !breakRepeat; i--)
 				{
@@ -247,43 +248,59 @@ class AnimationItem extends Object
 					yield WaitForSeconds(wait);
 				}
 			}
-			else if ("Repeat" in options)
+			else if ("Loop" in options)
 			{
-				i = 0;
-				while (!breakRepeat)
+				if (repeating != null)
 				{
-					sr.sprite = sprites[row, index_prefix + repeating[i]];
-					i++;
-					if (i >= repeating.Length)
-						i = 0;
-					yield WaitForSeconds(wait);
+					i = 0;
+					while (!breakRepeat)
+					{
+						sr.sprite = sprites[row, index_prefix + repeating[i]];
+						i++;
+						if (i >= repeating.Length)
+							i = 0;
+						yield WaitForSeconds(wait);
+					}
+				}
+				else if (stepping != null)
+				{
+					i = 0;
+					var index_increment = 1;
+					while (!breakRepeat)
+					{
+						sr.sprite = sprites[row, index_prefix + stepping[i]];
+						i = i + index_increment;
+						if (i >= stepping.Length)
+						{
+							i = stepping.Length - 2;
+							index_increment = -1;
+						}
+						else if (i < 0)
+						{
+							i = 1;
+							index_increment = 1;
+						}
+						yield WaitForSeconds(wait);
+					}
 				}
 			}
-			else if ("Step" in options)
+			else if ("Hold" in options)
 			{
-				i = 0;
-				var index_increment = 1;
-				while (!breakRepeat)
+				if (progressive != null)
 				{
-					sr.sprite = sprites[row, index_prefix + stepping[i]];
-					i = i + index_increment;
-					if (i >= stepping.Length)
-					{
-						i = stepping.Length - 2;
-						index_increment = -1;
-					}
-					else if (i < 0)
-					{
-						i = 1;
-						index_increment = 1;
-					}
-					yield WaitForSeconds(wait);
+					sr.sprite = sprites[row, index_prefix + progressive[progressive.Length-1]];
+				}
+				else
+				{
+					var loop_array = repeating;
+					if (loop_array == null)
+						loop_array = stepping;
+					sr.sprite = sprites[row, index_prefix + loop_array[0]];
 				}
 			}
 			else
 			{
 				Debug.Log("WARNING: This animation type requires option Start/End/Step/Repeat -- " + name);
-				yield;
 			}
 		}
 		else if (type == AnimType.Moving)
