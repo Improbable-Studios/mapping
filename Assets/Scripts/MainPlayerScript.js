@@ -82,7 +82,7 @@ class MainPlayerScript extends MonoBehaviour
 			skin = animScript.listOfSkins(character)[Random.Range(0, animScript.animations[character].Count)];
 		anim = animScript.getAnimatedObject(sr, character, skin);
 		anim.speed = speed;
-//		animScript.StartCoroutine(anim.run("Stand", [direction]));
+		animScript.StartCoroutine(anim.run("Walk", [direction, "Idle"]));
 	}
 
 	function checkInput()
@@ -132,7 +132,7 @@ class MainPlayerScript extends MonoBehaviour
 		{
 			if (!map.isWalkable(dest, direction))
 			{
-//				animScript.StartCoroutine(anim.run("Stand", [direction]));
+				animScript.StartCoroutine(anim.run("Walk", [direction, "Idle"]));
 				return;
 			}
 				

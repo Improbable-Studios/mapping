@@ -288,15 +288,22 @@ class AnimationItem extends Object
 		}
 		else if (type == AnimType.Moving)
 		{
-			var moveArray = move1;
-			if (alternateMove)
-				moveArray = move2;
-			for (i=0; i<moveArray.Length && !breakRepeat; i++)
+			if ("Idle" in options)
 			{
-				sr.sprite = sprites[row, index_prefix + moveArray[i]];
-				yield WaitForSeconds(wait/4.0);
+				sr.sprite = sprites[row, index_prefix + move1[i]];
 			}
-			alternateMove = !alternateMove;
+			else
+			{
+				var moveArray = move1;
+				if (alternateMove)
+					moveArray = move2;
+				for (i=0; i<moveArray.Length && !breakRepeat; i++)
+				{
+					sr.sprite = sprites[row, index_prefix + moveArray[i]];
+					yield WaitForSeconds(wait/4.0);
+				}
+				alternateMove = !alternateMove;
+			}
 		}
 
 		isRunning = false;
