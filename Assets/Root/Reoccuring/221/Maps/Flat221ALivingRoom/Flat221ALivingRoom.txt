@@ -1,4 +1,4 @@
 Exit ExitHallway: Q15 > Hallway N6
 Exit ExitBedroomA: M5 > Flat221ABedroom Q12
 Exit ExitBedroomB: J5 > Flat221ABedroom N12
-Exit ExitGarden: Q5 > Garden A1_Down
+Exit ExitGarden: Q5 > Garden A1_South
