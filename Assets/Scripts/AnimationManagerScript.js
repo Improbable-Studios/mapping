@@ -16,6 +16,7 @@ class AnimationItem extends Object
 	var framesPerSecond = 5.0;
 	var isRunning = false;
 	var breakRepeat = false;
+	var breakRepeatAfterFinish = false;
 
 	var name : String;
 	var type : AnimType;
@@ -256,6 +257,8 @@ class AnimationItem extends Object
 					while (!breakRepeat)
 					{
 						sr.sprite = sprites[row, index_prefix + repeating[i]];
+						if (breakRepeatAfterFinish && i==0)
+							break;
 						i++;
 						if (i >= repeating.Length)
 							i = 0;
@@ -269,6 +272,9 @@ class AnimationItem extends Object
 					while (!breakRepeat)
 					{
 						sr.sprite = sprites[row, index_prefix + stepping[i]];
+						if (breakRepeatAfterFinish && i==0)
+							break;
+	
 						i = i + index_increment;
 						if (i >= stepping.Length)
 						{
@@ -329,6 +335,13 @@ class AnimationItem extends Object
 	function stop()
 	{
 		breakRepeat = true;
+		while (isRunning)
+			yield;
+	}
+
+	function stopAfterFinish()
+	{
+		breakRepeatAfterFinish = true;
 		while (isRunning)
 			yield;
 	}
