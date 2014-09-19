@@ -218,6 +218,7 @@ class AnimationItem extends Object
 		breakRepeat = false;
 
 		var wait = 1.0 / (speed * framesPerSecond);
+		var time = Time.time;
 
 		var index_prefix = 0;
 		if (type == AnimType.Moving || type == AnimType.Directional)
@@ -285,7 +286,7 @@ class AnimationItem extends Object
 				for (var i=0; i<progressive.Length && !breakRepeat; i++)
 				{
 					sr.sprite = sprites[row, index_prefix + progressive[i]];
-					yield WaitForSeconds(wait);
+					yield WaitForSeconds(wait - (Time.time-time) % wait);
 				}
 			}
 			else if ("Stop" in options)
@@ -293,7 +294,7 @@ class AnimationItem extends Object
 				for (i=progressive.Length-1; i>=0 && !breakRepeat; i--)
 				{
 					sr.sprite = sprites[row, index_prefix + progressive[i]];
-					yield WaitForSeconds(wait);
+					yield WaitForSeconds(wait - (Time.time-time) % wait);
 				}
 			}
 			else if ("Loop" in options)
@@ -305,7 +306,7 @@ class AnimationItem extends Object
 					while (!breakRepeat)
 					{
 						sr.sprite = sprites[row, index_prefix + repeating[i]];
-						yield WaitForSeconds(wait);
+						yield WaitForSeconds(wait - (Time.time-time) % wait);
 
 						if (breakRepeatAfterFinish && i==0 && ranAtLeastOnce)
 							break;
@@ -322,7 +323,7 @@ class AnimationItem extends Object
 					while (!breakRepeat)
 					{
 						sr.sprite = sprites[row, index_prefix + stepping[i]];
-						yield WaitForSeconds(wait);
+						yield WaitForSeconds(wait - (Time.time-time) % wait);
 
 						if (breakRepeatAfterFinish && i==0 && ranAtLeastOnce)
 							break;
@@ -375,7 +376,7 @@ class AnimationItem extends Object
 				for (i=0; i<moveArray.Length && !breakRepeat; i++)
 				{
 					sr.sprite = sprites[row, index_prefix + moveArray[i]];
-					yield WaitForSeconds(wait/4.0);
+					yield WaitForSeconds(wait/4.0 - (Time.time-time) % (wait/4.0));
 				}
 				alternateMove = !alternateMove;
 			}
