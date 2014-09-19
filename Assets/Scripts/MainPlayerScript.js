@@ -283,7 +283,7 @@ class MainPlayerScript extends MonoBehaviour
 			{
 				var tokens = name.Split();
 				var methodInfo = typeof(map).GetMethod(tokens[0]);
-				var success;
+				var success = true;
 				if (methodInfo)
 					success = methodInfo.Invoke(map, []);
 				if (success == true)
