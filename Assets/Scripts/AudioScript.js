@@ -6,29 +6,24 @@ var fadeOut = true;
 var fadeIn = true;
 
 private var sound : AudioSource;
-private var player : GameObject;
 private var volume : float;
 
 function Awake()
 {
 	sound = GetComponent(AudioSource);
-	player = GameObject.Find("Player");
 	volume = sound.audio.volume;
 }
 
 function OnEnable()
 {
+	if (!pointSource)
+		sound.panLevel = 0.0;
+
 	if (randomiseTime)
 		sound.audio.time = UnityEngine.Random.Range(0f, sound.audio.clip.length);
 
 	if (fadeIn)
 		doFadeIn();
-}
-
-function Update()
-{
-	if (!pointSource)
-		transform.position = Camera.main.transform.position;
 }
 
 function changeDefaultVolume(vol : float)

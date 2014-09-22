@@ -376,7 +376,8 @@ class AnimationItem extends Object
 				for (i=0; i<moveArray.Length && !breakRepeat; i++)
 				{
 					sr.sprite = sprites[row, index_prefix + moveArray[i]];
-					yield WaitForSeconds(wait/4.0 - (Time.time-time) % (wait/4.0));
+					if (i<moveArray.Length-1)
+						yield WaitForSeconds(wait/4.0 - (Time.time-time) % (wait/4.0));
 				}
 				alternateMove = !alternateMove;
 			}
@@ -628,6 +629,27 @@ class AnimatedObject extends Object
 		}
 		currentAnimation = skin.anims[animation];
 		yield manager.StartCoroutine(currentAnimation.run(sr, speed * speedModifier, options));
+	}
+	
+	function isRunning()
+	{
+		return currentAnimation.isRunning;
+	}
+
+	function stop()
+	{
+		yield currentAnimation.stop();
+	}
+
+	function stopAfterFinish()
+	{
+		yield currentAnimation.stopAfterFinish();
+	}
+
+	function waitTillFinished()
+	{
+		while(currentAnimation.isRunning)
+			yield;
 	}
 }
 

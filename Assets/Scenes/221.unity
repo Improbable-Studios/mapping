@@ -1338,7 +1338,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 0d71db3a941fd46c3b98adb54f98eb2f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
---- !u!1001 &587789665
+--- !u!1001 &597470968
 Prefab:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -1351,7 +1351,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: da8a033a5955645b588d99afa153116e, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -2
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: da8a033a5955645b588d99afa153116e, type: 2}
       propertyPath: m_LocalPosition.z
@@ -1382,11 +1382,10 @@ Prefab:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 11400000, guid: da8a033a5955645b588d99afa153116e, type: 2}
-      propertyPath: speed
+      propertyPath: isCameraFollow
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 9500000, guid: da8a033a5955645b588d99afa153116e, type: 2}
+    m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: da8a033a5955645b588d99afa153116e, type: 2}
   m_RootGameObject: {fileID: 2135468064}
   m_IsPrefabParent: 0
@@ -2895,6 +2894,7 @@ GameObject:
   - 92: {fileID: 1381913927}
   - 124: {fileID: 1381913926}
   - 81: {fileID: 1381913925}
+  - 114: {fileID: 1381913930}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -2968,6 +2968,18 @@ Transform:
   - {fileID: 1658887078}
   m_Father: {fileID: 0}
   m_RootOrder: 5
+--- !u!114 &1381913930
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1381913924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29d9f18417b764e3b8e263b8fd9433bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  follow: {fileID: 2135468064}
 --- !u!1 &1436789197
 GameObject:
   m_ObjectHideFlags: 0
@@ -3767,12 +3779,13 @@ Transform:
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 100000, guid: da8a033a5955645b588d99afa153116e, type: 2}
-  m_PrefabInternal: {fileID: 587789665}
+  m_PrefabInternal: {fileID: 597470968}
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 2135468065}
   - 114: {fileID: 2135468068}
   - 212: {fileID: 2135468067}
+  - 114: {fileID: 2135468066}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -3784,20 +3797,38 @@ GameObject:
 Transform:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 400000, guid: da8a033a5955645b588d99afa153116e, type: 2}
-  m_PrefabInternal: {fileID: 587789665}
+  m_PrefabInternal: {fileID: 597470968}
   m_GameObject: {fileID: 2135468064}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8, y: -2, z: 0}
+  m_LocalPosition: {x: 8, y: -1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
+--- !u!114 &2135468066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2135468064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3acaa4fcfd8104e0ba7280bf76050a98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 1
+  direction: South
+  character: john
+  skin: Jacket
+  moveAnimation: Walk
+  triggerPreEvents: 1
+  triggerPostEvents: 1
 --- !u!212 &2135468067
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 21200000, guid: da8a033a5955645b588d99afa153116e,
     type: 2}
-  m_PrefabInternal: {fileID: 587789665}
+  m_PrefabInternal: {fileID: 597470968}
   m_GameObject: {fileID: 2135468064}
   m_Enabled: 1
   m_CastShadows: 0
@@ -3820,14 +3851,11 @@ MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 11400000, guid: da8a033a5955645b588d99afa153116e,
     type: 2}
-  m_PrefabInternal: {fileID: 587789665}
+  m_PrefabInternal: {fileID: 597470968}
   m_GameObject: {fileID: 2135468064}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8779566744704446f9eeb54feb99b69e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 1
-  direction: Down
-  isCameraFollow: 1
   disableInputs: 0

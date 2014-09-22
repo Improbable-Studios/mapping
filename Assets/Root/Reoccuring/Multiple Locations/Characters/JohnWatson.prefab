@@ -10,7 +10,6 @@ GameObject:
   - 4: {fileID: 400000}
   - 114: {fileID: 11400000}
   - 212: {fileID: 21200000}
-  - 95: {fileID: 9500000}
   m_Layer: 0
   m_Name: JohnWatson
   m_TagString: Player
@@ -30,21 +29,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!95 &9500000
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 0
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 942f3cf8c95ae411d982258bcb0e68ce, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -56,10 +40,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8779566744704446f9eeb54feb99b69e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
+  speed: 1
   direction: Down
   isCameraFollow: 1
-  spritesheet: {fileID: 0}
   disableInputs: 0
 --- !u!212 &21200000
 SpriteRenderer:

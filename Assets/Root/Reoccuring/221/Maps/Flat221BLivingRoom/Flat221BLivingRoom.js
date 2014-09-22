@@ -5,10 +5,12 @@ var tvAudio : GameObject;
 class Flat221BLivingRoom extends MapBaseScript
 {
 	private var player : MainPlayerScript;
+	private var character : CharacterScript;
 
 	function Awake()
 	{
 		player = GameObject.Find("Player").GetComponent(MainPlayerScript);
+		character = GameObject.Find("Player").GetComponent(CharacterScript);
 	}
 
 	function Fridge()
@@ -34,17 +36,18 @@ class Flat221BLivingRoom extends MapBaseScript
 	function BedroomDoor()
 	{
 		Debug.Log ("BedroomDoor event successful!");
-		player.doWalk("North", true);
+		character.move("North", true);
 	}
 
 	function UpStairs()
 	{
 		player.disableInputs = true;
-		player.doWalk("North", true);
-		yield ScreenFaderScript.fadeOut(0.5f, Color.black);
-		player.initAnim("Random", "Random");
-		player.doWalk("South", true);
-		yield ScreenFaderScript.fadeIn(0.5f);
+		character.move("North", 4, true);
+		yield ScreenFaderScript.fadeOut(0.8f, Color.black);
+		character.character = "Random";
+		character.initAnim();
+		character.move("South", 4, true);
+		yield ScreenFaderScript.fadeIn(0.8f);
 		player.disableInputs = false;
 	}
 }
