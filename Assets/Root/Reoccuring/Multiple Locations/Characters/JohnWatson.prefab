@@ -10,6 +10,7 @@ GameObject:
   - 4: {fileID: 400000}
   - 114: {fileID: 11400000}
   - 212: {fileID: 21200000}
+  - 114: {fileID: 11400002}
   m_Layer: 0
   m_Name: JohnWatson
   m_TagString: Player
@@ -24,7 +25,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 100000}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8, y: -2, z: 0}
+  m_LocalPosition: {x: 8, y: -1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -40,10 +41,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8779566744704446f9eeb54feb99b69e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 1
-  direction: Down
-  isCameraFollow: 1
   disableInputs: 0
+  triggerExits: 1
+  triggerInteracts: 1
+--- !u!114 &11400002
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3acaa4fcfd8104e0ba7280bf76050a98, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 1
+  direction: South
+  character: john
+  skin: Jacket
+  moveAnimation: Walk
+  useMapCollisionMask: 1
+  triggerPreEvents: 1
+  triggerPostEvents: 1
 --- !u!212 &21200000
 SpriteRenderer:
   m_ObjectHideFlags: 1

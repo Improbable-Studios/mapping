@@ -15,6 +15,8 @@ class MainPlayerScript extends MonoBehaviour
 	private var map : MapBaseScript;
 	private var character : CharacterScript;
 	private var sr : SpriteRenderer;
+
+	private var canvas : CanvasGroup;
 	
 	function Awake()
 	{
@@ -32,14 +34,17 @@ class MainPlayerScript extends MonoBehaviour
 		}
 		var cameraZoom = 2.0;
         Camera.main.orthographicSize = 0.99f * Screen.height / (2.0 * 32.0 * cameraZoom);
+		canvas = GameObject.Find("Canvas").GetComponent(CanvasGroup);
 	}
 
 	function Start ()
 	{
+		canvas.alpha = 0f;
+		canvas.interactable = false;
 		yield WaitForSeconds(0.5);
 		character.move("South", 4, true);
 	}
-	
+
 	function Update ()
 	{
 		// Check for directional key releases
@@ -75,6 +80,12 @@ class MainPlayerScript extends MonoBehaviour
 			if (name != "")
 				map.StartCoroutine(name);
 		}
+		else if (Input.GetKeyDown(KeyCode.Escape))
+		{
+			yield ScreenFaderScript.fadeOut(0.5f, Color.black);
+			canvas.alpha = 1f;
+			canvas.interactable = true;
+		}
 		else if (Input.GetKeyDown(KeyCode.Tab))
 		{
 			// TESTING AREA
@@ -82,6 +93,18 @@ class MainPlayerScript extends MonoBehaviour
 			var animName = anims[Random.Range(0, anims.Length)];
 			character.animate(animName, ["Random"]);
 		}
+	}
+
+	function cancelQuit()
+	{
+		canvas.alpha = 0f;
+		canvas.interactable = false;
+		ScreenFaderScript.fadeIn(0.5f);
+	}
+
+	function quitGame()
+	{
+		Application.Quit();
 	}
 
 	function move(direction : String)
