@@ -8,6 +8,12 @@ class MapBaseScript extends MonoBehaviour
 	var text : TextAsset;
 	var bgm : AudioClip;
 	var bgmVolume = 1f;
+	var ambience1 : AudioClip;
+	var ambience1Volume = 1f;
+	var ambience2 : AudioClip;
+	var ambience2Volume = 1f;
+
+	var currentTime = "Morning"; // HACK: Need to move to a global state manager
 
 	private var obstacles = Dictionary.<String, String>();
 	private var objects = Dictionary.<String, String>();
@@ -15,65 +21,117 @@ class MapBaseScript extends MonoBehaviour
 	private var postevents = Dictionary.<String, String>();
 	private var exits = Dictionary.<String, String>();
 	
-	private var bgmplayer : AudioSource;
-	private var bgmscript : AudioScript;
+	var bgmplayer : AudioSource;
+	var bgmscript : AudioScript;
+	var ambience1player : AudioSource;
+	var ambience1script : AudioScript;
+	var ambience2player : AudioSource;
+	var ambience2script : AudioScript;
 
-	function Start ()
+	function Awake()
 	{
+		bgmplayer = GameObject.Find("Background Music").GetComponent(AudioSource);
+		bgmscript = GameObject.Find("Background Music").GetComponent(AudioScript);
+		ambience1player = GameObject.Find("Ambience 1").GetComponent(AudioSource);
+		ambience1script = GameObject.Find("Ambience 1").GetComponent(AudioScript);
+		ambience2player = GameObject.Find("Ambience 2").GetComponent(AudioSource);
+		ambience2script = GameObject.Find("Ambience 2").GetComponent(AudioScript);
+	}
+
+	function OnEnable()
+	{
+		playBGM();
+	}
+
+	function initialise()
+	{
+		if (!text)
+		{
+			Debug.Log("WARNNG, no text file found in room: " + name);
+			return;
+		}
+		var resourcePrefix = "audio/";
+
 		var lines = text.text.Split('\n'[0]);
 		for (var l=0; l<lines.GetLength(0); l++)
 		{
 			var line = lines[l].Trim();
 			if (line == "")
 				continue;
-			var tokens = line.Split(':'[0]);
-			var nametype = tokens[0].Trim ();
-			var val = tokens[1].Trim();
-			
-			tokens = nametype.Split(' '[0]);
-			var type = tokens[0].Trim();
-			var name = tokens[tokens.GetLength(0)-1].Trim();
 
-			if (type == "Exit")
+			if (line.StartsWith("BGM"))
 			{
-				tokens = val.Split('>'[0]);
-				var subtokensA = tokens[0].Trim().Split(' '[0]);
-				var dest = tokens[1].Trim();
-				for (var t=0; t<subtokensA.GetLength(0); t++)
+				var tokens = line.Split(' '[0]);
+				if (tokens[0].EndsWith(currentTime))
 				{
-					var coords = subtokensA[t].Trim();
-					exits[coords] = name + ' ' + dest;
+					bgm = Resources.Load(resourcePrefix + tokens[1].Trim()) as AudioClip;
+					bgmVolume = float.Parse(tokens[2].Trim());
+				}
+			}
+			else if (line.StartsWith("Ambience1"))
+			{
+				tokens = line.Split(' '[0]);
+				if (tokens[0].EndsWith(currentTime))
+				{
+					ambience1 = Resources.Load(resourcePrefix + tokens[1].Trim()) as AudioClip;
+					ambience1Volume = float.Parse(tokens[2].Trim());
+				}
+			}
+			else if (line.StartsWith("Ambience2"))
+			{
+				tokens = line.Split(' '[0]);
+				if (tokens[0].EndsWith(currentTime))
+				{
+					ambience2 = Resources.Load(resourcePrefix + tokens[1].Trim()) as AudioClip;
+					ambience2Volume = float.Parse(tokens[2].Trim());
 				}
 			}
 			else
 			{
-				tokens = val.Split(' '[0]);
-				for (t=0; t<tokens.GetLength(0); t++)
+				tokens = line.Split(':'[0]);
+				var nametype = tokens[0].Trim ();
+				var val = tokens[1].Trim();
+				
+				tokens = nametype.Split(' '[0]);
+				var type = tokens[0].Trim();
+				var name = tokens[tokens.GetLength(0)-1].Trim();
+
+				if (type == "Exit")
 				{
-					coords = tokens[t].Trim();
-					if (type == "Obstacle")
-						obstacles[coords] = name;
-					else if (type == "Object")
-						objects[coords] = name;
-					else if (type == "PreEvent")
-						preevents[coords] = name;
-					else if (type == "PostEvent")
-						postevents[coords] = name;
+					tokens = val.Split('>'[0]);
+					var subtokensA = tokens[0].Trim().Split(' '[0]);
+					var dest = tokens[1].Trim();
+					for (var t=0; t<subtokensA.GetLength(0); t++)
+					{
+						var coords = subtokensA[t].Trim();
+						exits[coords] = name + ' ' + dest;
+					}
+				}
+				else
+				{
+					tokens = val.Split(' '[0]);
+					for (t=0; t<tokens.GetLength(0); t++)
+					{
+						coords = tokens[t].Trim();
+						if (type == "Obstacle")
+							obstacles[coords] = name;
+						else if (type == "Object")
+							objects[coords] = name;
+						else if (type == "PreEvent")
+							preevents[coords] = name;
+						else if (type == "PostEvent")
+							postevents[coords] = name;
+					}
 				}
 			}
 		}
 	}
 
-	function OnEnable()
-	{
-		bgmplayer = GameObject.Find("Background Music").GetComponent(AudioSource);
-		bgmscript = GameObject.Find("Background Music").GetComponent(AudioScript);
-		playBGM();
-	}
-
 	function playBGM()
 	{
 		bgmscript.changeClip(bgm, bgmVolume);
+		ambience1script.changeClip(ambience1, ambience1Volume);
+		ambience2script.changeClip(ambience2, ambience2Volume);
 	}
 
 	function nextChar(character : String, increment : int) : String

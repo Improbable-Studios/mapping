@@ -1,3 +1,0 @@
-Exit Exit221A: N5 > Flat221ALivingRoom Q14
-Exit Exit221B: L6 > Flat221BLivingRoom J3_South
-Exit ExitBuilding: L16 > Exterior M11

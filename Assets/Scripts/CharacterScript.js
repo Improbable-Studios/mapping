@@ -12,10 +12,10 @@ class CharacterScript extends MonoBehaviour
 	var triggerPreEvents = false;
 	var triggerPostEvents = false;
 
-	private var currentLocation : GameObject;
 	private var map : MapBaseScript;
 
 	private var animScript : AnimationManagerScript;
+	private var mapManager : MapManagerScript;
 	private var anim : AnimatedObject;
 	private var sr : SpriteRenderer;
 	
@@ -28,15 +28,8 @@ class CharacterScript extends MonoBehaviour
 	{
 		cameraScript = GameObject.Find("Main Camera").GetComponent(CameraScript);
 		animScript = GameObject.Find("Manager").GetComponent(AnimationManagerScript);
+		mapManager = GameObject.Find("Manager").GetComponent(MapManagerScript);
 		sr = GetComponent(SpriteRenderer);
-
-		for (t_ in GameObject.Find("Locations").transform)
-		{
-			var t : Transform = t_ as Transform;
-			var l = t.gameObject;
-			if (l.activeInHierarchy)
-				currentLocation = l;
-		}
 	}
 
 	function Start ()
@@ -48,7 +41,7 @@ class CharacterScript extends MonoBehaviour
 
 	function updateMap()
 	{
-		map = GameObject.Find("Map").GetComponent(MapBaseScript);
+		map = mapManager.getRoomObject().GetComponent(MapBaseScript);
 	}
 
 	function updateCamera()
@@ -99,7 +92,7 @@ class CharacterScript extends MonoBehaviour
 
 	function move(input : String, distance : int)
 	{
-		return move(input, distance, false);
+		return move(input, distance, true);
 	}
 
 	function move(input : String, bypass : boolean)
@@ -143,13 +136,13 @@ class CharacterScript extends MonoBehaviour
 			yield StartCoroutine(moveCoroutine(bypass));
 			distance--;
 		}
+		isMoving = false;
 	}
 
 	function moveCoroutine(bypass : boolean)
 	{
 		animate(moveAnimation, [direction]);
 		var fractionMoved = 0f;
-		isMoving = true;
 
 		while (isMoving && fractionMoved < 1f)
 		{
@@ -183,6 +176,5 @@ class CharacterScript extends MonoBehaviour
 			}
 			yield;
 		}
-		isMoving = false;
 	}
 }

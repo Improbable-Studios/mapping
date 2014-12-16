@@ -7,33 +7,25 @@ class MainPlayerScript extends MonoBehaviour
 	var triggerInteracts = true;
 
 	private var isKeyUpAfterWalking = true;
+	private var finishedCheckingExits = true;
 
 	private var isChangingLocation = false;
 	private var currentLocation : GameObject;
-	private var locationsDict = Dictionary.<String, GameObject>();
 
 	private var map : MapBaseScript;
 	private var character : CharacterScript;
+	private var mapManager : MapManagerScript;
 	private var sr : SpriteRenderer;
 
 	private var canvas : CanvasGroup;
 	
 	function Awake()
 	{
-		map = GameObject.Find("Map").GetComponent(MapBaseScript);
 		character = GetComponent(CharacterScript);
+		mapManager = GameObject.Find("Manager").GetComponent(MapManagerScript);
 		sr = GetComponent(SpriteRenderer);
-
-		for (t_ in GameObject.Find("Locations").transform)
-		{
-			var t : Transform = t_ as Transform;
-			var l = t.gameObject;
-			locationsDict[l.name] = l;
-			if (l.activeInHierarchy)
-				currentLocation = l;
-		}
-		var cameraZoom = 2.0;
-        Camera.main.orthographicSize = 0.99f * Screen.height / (2.0 * 32.0 * cameraZoom);
+		sr.enabled = false;
+		setCameraZoom(2.0);
 		canvas = GameObject.Find("Canvas").GetComponent(CanvasGroup);
 	}
 
@@ -41,8 +33,14 @@ class MainPlayerScript extends MonoBehaviour
 	{
 		canvas.alpha = 0f;
 		canvas.interactable = false;
+		currentLocation = mapManager.getRoomObject();
+		map = currentLocation.GetComponent(MapBaseScript);
+		yield ScreenFaderScript.fadeOut(0.0f, Color.black);
 		yield WaitForSeconds(0.5);
+		yield changeLocation("Interior/221B/Stairwell", "F2");
+		sr.enabled = true;
 		character.move("South", 4, true);
+		ScreenFaderScript.fadeIn(1f, Color.black);
 	}
 
 	function Update ()
@@ -60,7 +58,7 @@ class MainPlayerScript extends MonoBehaviour
 			isKeyUpAfterWalking = true;
 
 		// Check for active inputs
-		if (!character.moving() && !isChangingLocation && !disableInputs)
+		if (!character.moving() && !isChangingLocation && !disableInputs && finishedCheckingExits)
 			checkInput();
 	}
 
@@ -107,8 +105,14 @@ class MainPlayerScript extends MonoBehaviour
 		Application.Quit();
 	}
 
+	function setCameraZoom(zoom : float)
+	{
+        Camera.main.orthographicSize = 0.99f * Screen.height / (2.0 * 32.0 * zoom);
+	}
+
 	function move(direction : String)
 	{
+		finishedCheckingExits = false;
 		if (!isKeyUpAfterWalking)
 			yield character.move(character.direction);
 		else
@@ -118,7 +122,8 @@ class MainPlayerScript extends MonoBehaviour
 		}
 		
 		if (triggerExits)
-			checkExit();
+			yield checkExit();
+		finishedCheckingExits = true;
 	}
 
 	function checkExit()
@@ -134,56 +139,15 @@ class MainPlayerScript extends MonoBehaviour
 			if (success == true)
 			{
 				var subtokens = tokens[2].Split('_'[0]);
-				disableInputs = true;
 				yield changeLocation(tokens[1], subtokens[0]);
 				if (subtokens.Length == 2)
-					character.move(subtokens[1], true);
-				disableInputs = false;
+					yield character.move(subtokens[1], true);
 			}
-		}
-	}
-
-	function fadeOutAudio(location : GameObject)
-	{
-		var audiolist = location.GetComponentsInChildren(AudioScript);
-		var audio : AudioScript;
-		for (audio_ in audiolist)
-		{
-			audio = audio_ as AudioScript;
-			if (audio.fadeOut)
-				audio.doFadeOut();
-			else
-				audio.changeCurrentVolume(0f);
-		}
-		
-		var stillFadingOut = true;
-		while (stillFadingOut)
-		{
-			stillFadingOut = false;
-			for (audio_ in audiolist)
-			{
-				audio = audio_ as AudioScript;
-				if (audio.currentVolume() > 0)
-					stillFadingOut = true;
-			}
-			yield;
 		}
 	}
 
 	function fadeOutLocation(location : GameObject)
 	{
-//		var thismap = GameObject.Find("Map");
-//		var thischar = GameObject.Find("Characters");
-//
-//		sr.enabled = false;
-//		thismap.SetActive(false);
-//		thischar.SetActive(false);
-//
-//		yield fadeOutAudio(location);
-//
-//		location.SetActive(false);
-//		thismap.SetActive(true);
-//		thischar.SetActive(true);
 		sr.enabled = false;
 		location.SetActive(false);
 		yield;
@@ -199,12 +163,13 @@ class MainPlayerScript extends MonoBehaviour
 	function changeLocation(location : String, coords : String)
 	{
 		isChangingLocation = true;
-		if (locationsDict.ContainsKey(location))
+		if (mapManager.isRoomExist(location))
 		{
-			if (locationsDict[location] != currentLocation)
+			if (mapManager.getRoomObject(location) != currentLocation)
 			{
 				yield fadeOutLocation(currentLocation);
-				currentLocation = locationsDict[location];
+				mapManager.currentRoom = location;
+				currentLocation = mapManager.getRoomObject();
 			}
 
 			var x : int = coords[0];
@@ -216,11 +181,17 @@ class MainPlayerScript extends MonoBehaviour
 			newPos.y = -y + 1;
 			transform.position = newPos;
 			character.updateCamera();
+			if (location.StartsWith("Exterior"))
+				setCameraZoom(1.0);
+			else
+				setCameraZoom(2.0);
+
+
 
 			if (!currentLocation.activeInHierarchy)
 			{
 				yield fadeInLocation(currentLocation);
-				map = GameObject.Find("Map").GetComponent(MapBaseScript);
+				map = currentLocation.GetComponent(MapBaseScript);
 				character.updateMap();
 			}
 			else

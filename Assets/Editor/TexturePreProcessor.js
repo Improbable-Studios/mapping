@@ -11,7 +11,7 @@
 	    importer.filterMode = FilterMode.Point;
 	    importer.isReadable = true;
 	    importer.maxTextureSize = 4096;
-	    importer.spritePixelsToUnits = 32;
+	    importer.spritePixelsPerUnit = 32;
 	    var pivot = Vector2(0f, 0f); //top left;
 	    importer.spritePivot = pivot;
     }

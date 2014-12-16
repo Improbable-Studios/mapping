@@ -3,8 +3,8 @@
 # =============== #
 Temp/
 Library/
-Resources/
-Resources.meta
+Assets/Resources/
+Assets/Resources.meta
 
 # ===================================== #
 # Visual Studio / MonoDevelop generated #

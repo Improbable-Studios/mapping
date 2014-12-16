@@ -14,18 +14,6 @@ function Awake()
 	volume = sound.audio.volume;
 }
 
-function OnEnable()
-{
-	if (!pointSource)
-		sound.panLevel = 0.0;
-
-	if (randomiseTime)
-		sound.audio.time = UnityEngine.Random.Range(0f, sound.audio.clip.length);
-
-	if (fadeIn)
-		doFadeIn();
-}
-
 function changeDefaultVolume(vol : float)
 {
 	volume = vol;
@@ -82,7 +70,7 @@ function doFadeToVolume(vol : float, speed : float)
 	yield;
 }
 
-function changeClip(clip : AudioClip, vol : float)
+function changeClip(clip : AudioClip, vol : float, skipFade : boolean)
 {
 	while (!sound)
 		yield;
@@ -92,20 +80,41 @@ function changeClip(clip : AudioClip, vol : float)
 	if (sound.audio.clip != clip)
 	{
 		volume = vol;
-		if (fadeOut)
+		if (!skipFade && fadeOut)
 			yield doFadeOut();
 		else
 			sound.audio.volume = 0f;
 
 		sound.audio.clip = clip;
+		if (!pointSource)
+			sound.panLevel = 0.0;
+		if (sound.audio.clip && randomiseTime)
+			sound.audio.time = UnityEngine.Random.Range(0f, sound.audio.clip.length);
 		sound.audio.Play();
-		if (fadeIn)
+		if (!skipFade && fadeIn)
 			yield doFadeIn();
 		else
 			sound.audio.volume = vol;
 	}
 	else
 	{
+		if (!isPlaying())
+			sound.audio.Play();
 		yield doFadeToVolume(vol, 1f);
 	}
+}
+
+function changeClip(clip : AudioClip, vol : float)
+{
+	return changeClip(clip, vol, false);
+}
+
+function isPlaying()
+{
+	return sound.isPlaying;
+}
+
+function stopPlaying()
+{
+	sound.audio.Stop();
 }

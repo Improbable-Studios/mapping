@@ -6,7 +6,7 @@ var directory : TextAsset;
 
 var json : JSONClass;
 
-private var save = [".png", ".ogg", ".wav"];
+private var save = [".png", ".ogg", ".wav", ".txt"];
 
 function Awake()
 {
@@ -47,6 +47,8 @@ function getSubJSON(path : String)
 	{
 		if (p == "")
 			continue;
+		if (cur["/"][p] == null)
+			return null;
 		cur = cur["/"][p] as JSONClass;
 	}
 	return cur;
@@ -55,6 +57,8 @@ function getSubJSON(path : String)
 function getDirectoriesInPath(path : String)
 {
 	var J = getSubJSON(path);
+	if (J == null)
+		return null;
 	var res = new String[J["dirlist"].Count];
 	for (var i=0; i<J["dirlist"].Count; i++)
 		res[i] = J["dirlist"][i];
@@ -64,6 +68,9 @@ function getDirectoriesInPath(path : String)
 function getFilesOfType(path : String, extension : String)
 {
 	var J = getSubJSON(path);
+	if (J == null)
+		return null;
+
 	var f : String;
 	var count = 0;
 	if (J["filelist"].Count > 0)
@@ -87,5 +94,5 @@ function getFilesOfType(path : String, extension : String)
 			}
 		}
 	}
-		return res;
+	return res;
 }

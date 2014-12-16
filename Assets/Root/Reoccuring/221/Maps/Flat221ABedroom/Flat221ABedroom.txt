@@ -1,2 +1,0 @@
-Exit ExitLivingRoomA: Q13 > Flat221ALivingRoom M6
-Exit ExitLivingRoomB: N13 > Flat221ALivingRoom J6
