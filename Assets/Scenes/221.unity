@@ -581,11 +581,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 817362133}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1381913929}
-  m_RootOrder: 3
+  m_Father: {fileID: 983241285}
+  m_RootOrder: 1
 --- !u!114 &817362135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -599,6 +599,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   destinationObject: {fileID: 983241284}
   textureName: _BackgroundTex
+  outputTexture: {fileID: 0}
 --- !u!81 &817362136
 AudioListener:
   m_ObjectHideFlags: 0
@@ -749,7 +750,9 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 1465332522}
+  - {fileID: 817362134}
   m_Father: {fileID: 1381913929}
   m_RootOrder: 1
 --- !u!212 &983241286
@@ -1150,8 +1153,6 @@ Transform:
   m_Children:
   - {fileID: 2033830534}
   - {fileID: 983241285}
-  - {fileID: 1465332522}
-  - {fileID: 817362134}
   m_Father: {fileID: 0}
   m_RootOrder: 5
 --- !u!114 &1381913930
@@ -1194,11 +1195,11 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1465332521}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1381913929}
-  m_RootOrder: 2
+  m_Father: {fileID: 983241285}
+  m_RootOrder: 0
 --- !u!81 &1465332523
 AudioListener:
   m_ObjectHideFlags: 0
@@ -1265,6 +1266,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   destinationObject: {fileID: 983241284}
   textureName: _OverlayTex
+  outputTexture: {fileID: 0}
 --- !u!1 &1619944154
 GameObject:
   m_ObjectHideFlags: 0

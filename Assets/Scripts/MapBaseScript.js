@@ -13,7 +13,7 @@ class MapBaseScript extends MonoBehaviour
 	var ambience2 : AudioClip;
 	var ambience2Volume = 1f;
 
-	var currentTime = "Evening"; // HACK: Need to move to a global state manager
+	private var currentTime = "Evening"; // HACK: Need to move to a global state manager
 
 	private var obstacles = Dictionary.<String, String>();
 	private var objects = Dictionary.<String, String>();
@@ -24,6 +24,7 @@ class MapBaseScript extends MonoBehaviour
 	private var morning : SpriteRenderer;
 	private var afternoon : SpriteRenderer;
 	private var evening : SpriteRenderer;
+	private var shaderOutput : GameObject;
 
 	var bgmplayer : AudioSource;
 	var bgmscript : AudioScript;
@@ -34,6 +35,31 @@ class MapBaseScript extends MonoBehaviour
 
 	function Awake()
 	{
+	}
+
+	function OnEnable()
+	{
+		if (!morning)
+			return;
+
+		morning.enabled = false;
+		afternoon.enabled = false;
+		evening.enabled = false;
+		if (morning.sprite && currentTime == "Morning")
+			morning.enabled = true;
+		else if (afternoon.sprite && currentTime == "Afternoon")
+			afternoon.enabled = true;
+		else if (evening.sprite)
+			evening.enabled = true;
+		if (morning.enabled || afternoon.enabled || evening.enabled)
+			shaderOutput.SetActive(true);
+		else
+			shaderOutput.SetActive(false);
+		playBGM();
+	}
+
+	function initialise()
+	{
 		bgmplayer = GameObject.Find("Background Music").GetComponent(AudioSource);
 		bgmscript = GameObject.Find("Background Music").GetComponent(AudioScript);
 		ambience1player = GameObject.Find("Ambience 1").GetComponent(AudioSource);
@@ -43,24 +69,8 @@ class MapBaseScript extends MonoBehaviour
 		morning = gameObject.Find("Ambience-Morning").GetComponent(SpriteRenderer) as SpriteRenderer;
 		afternoon = gameObject.Find("Ambience-Afternoon").GetComponent(SpriteRenderer) as SpriteRenderer;
 		evening = gameObject.Find("Ambience-Evening").GetComponent(SpriteRenderer) as SpriteRenderer;
-	}
+		shaderOutput = gameObject.Find("Shader Output");
 
-	function OnEnable()
-	{
-		morning.enabled = false;
-		afternoon.enabled = false;
-		evening.enabled = false;
-		if (currentTime == "Morning")
-			morning.enabled = true;
-		else if (currentTime == "Afternoon")
-			afternoon.enabled = true;
-		else
-			evening.enabled = true;
-		playBGM();
-	}
-
-	function initialise()
-	{
 		if (!text)
 		{
 			Debug.Log("WARNNG, no text file found in room: " + name);
