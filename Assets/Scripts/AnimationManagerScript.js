@@ -436,7 +436,7 @@ class SpriteSkin extends Object
 			var tokens = pnglist[i].Split('-'[0]);
 			if (tokens.Length != 2)
 			{
-				Debug.Log("WARNING: Incorrect number of '-' in animation name: " + pnglist[i]);
+				Debug.Log("WARNING: Incorrect number of '-' in animation name: " + path + pnglist[i]);
 				continue;
 			}
 
@@ -446,7 +446,7 @@ class SpriteSkin extends Object
 			var subtokens = animType.Split();
 			if (subtokens.Length > 2)
 			{
-				Debug.Log("WARNING: Incorrect format of animation type: " + pnglist[i]);
+				Debug.Log("WARNING: Incorrect format of animation type: " + path + pnglist[i]);
 				continue;
 			}
 
@@ -456,14 +456,14 @@ class SpriteSkin extends Object
 				var subsubtokens = subtokens[1].Split('x'[0]);
 				if (subsubtokens.Length != 2)
 				{
-					Debug.Log("WARNING: Incorrect format of animation size: " + pnglist[i]);
+					Debug.Log("WARNING: Incorrect format of animation size: " + path + pnglist[i]);
 					continue;
 				}
 				var res1 = int.TryParse(subsubtokens[0].Trim(), dimensionX);
 				var res2 = int.TryParse(subsubtokens[1].Trim(), dimensionY);
 				if (!res1 || !res2)
 				{
-					Debug.Log("WARNING: Incorrect value for animation size: " + pnglist[i]);
+					Debug.Log("WARNING: Incorrect value for animation size: " + path + pnglist[i]);
 					continue;
 				}
 			}
@@ -472,13 +472,13 @@ class SpriteSkin extends Object
 
 			if (texture.width % (minimumSpriteSize * dimensionX) > 0)
 			{
-				Debug.Log("WARNING: Pixel width incorrect: " + pnglist[i]);
+				Debug.Log("WARNING: Pixel width incorrect: " + path + pnglist[i]);
 				continue;
 			}
 
 			if (texture.height % (minimumSpriteSize * dimensionY) > 0)
 			{
-				Debug.Log("WARNING: Pixel height incorrect: " + pnglist[i]);
+				Debug.Log("WARNING: Pixel height incorrect: " + path + pnglist[i]);
 				continue;
 			}
 
@@ -681,7 +681,7 @@ class AnimationManagerScript extends MonoBehaviour
 		    		var s : SpriteSkin = new SpriteSkin("Default", path, pnglist);
 		    		if (preLoadAllCharacters)
 		    		{
-				    	Debug.Log("Loading character and skin: " + dir + ", Default");
+//				    	Debug.Log("Loading character and skin: " + dir + ", Default");
 		    			s.loadTexture();
 		    			if (s.anims.ContainsKey("Walk"))
 		    				animations[dir]["Default"] = s;
@@ -702,7 +702,7 @@ class AnimationManagerScript extends MonoBehaviour
 		    		s = new SpriteSkin(subdir, subpath, subpnglist);
 		    		if (preLoadAllCharacters)
 		    		{
-				    	Debug.Log("Loading character and skin: " + dir + ", " + subdir);
+//				    	Debug.Log("Loading character and skin: " + dir + ", " + subdir);
 		    			s.loadTexture();
 		    			if (s.anims.ContainsKey("Walk"))
 		    				animations[dir][subdir] = s;

@@ -30,7 +30,7 @@ class MapManagerScript extends MonoBehaviour
 	    {
 	    	locations[dir] = new Dictionary.<String, GameObject>();
 	    	recursiveInitRooms(dir, "");
-	    	Debug.Log("LOCATION: " + dir + " " + locations[dir].Count + " rooms");
+//	    	Debug.Log("LOCATION: " + dir + " " + locations[dir].Count + " rooms");
 	    }
 	    loadLocation(currentLocation);
 	}
