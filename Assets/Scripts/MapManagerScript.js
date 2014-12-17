@@ -66,11 +66,20 @@ class MapManagerScript extends MonoBehaviour
 	    	var backTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/back") as Texture2D;
 	    	var frontTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/front") as Texture2D;
 	    	var collisionTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/collision") as Texture2D;
+	    	var morningTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/Ambience-Morning") as Texture2D;
+	    	var afternoonTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/Ambience-Afternoon") as Texture2D;
+	    	var eveningTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/Ambience-Evening") as Texture2D;
 	    	var configText : TextAsset = Resources.Load(resourcePrefix + "/config") as TextAsset;
 			var rect = Rect(0f, backTexture.height, backTexture.width, -backTexture.height);
 			var r = rooms.Instantiate(roomPrefab);
 			r.Find("back").GetComponent(SpriteRenderer).sprite = Sprite.Create(backTexture, rect, pivot, 32);
 			r.Find("front").GetComponent(SpriteRenderer).sprite = Sprite.Create(frontTexture, rect, pivot, 32);
+			if (morningTexture)
+				r.Find("Ambience-Morning").GetComponent(SpriteRenderer).sprite = Sprite.Create(morningTexture, rect, pivot, 32);
+			if (afternoonTexture)
+				r.Find("Ambience-Afternoon").GetComponent(SpriteRenderer).sprite = Sprite.Create(afternoonTexture, rect, pivot, 32);
+			if (eveningTexture)
+				r.Find("Ambience-Evening").GetComponent(SpriteRenderer).sprite = Sprite.Create(eveningTexture, rect, pivot, 32);
 
 			var customScriptName = "Map" + currentLocation + k.Replace("/", "");			
 			if (System.Type.GetType(customScriptName))

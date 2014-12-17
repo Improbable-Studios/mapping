@@ -1,4 +1,4 @@
-﻿#pragma strict
+#pragma strict
 
 class MainPlayerScript extends MonoBehaviour
 {
@@ -107,7 +107,7 @@ class MainPlayerScript extends MonoBehaviour
 
 	function setCameraZoom(zoom : float)
 	{
-        Camera.main.orthographicSize = 0.99f * Screen.height / (2.0 * 32.0 * zoom);
+        Camera.main.orthographicSize = Screen.height / (2.0 * 32.0 * zoom);
 	}
 
 	function move(direction : String)

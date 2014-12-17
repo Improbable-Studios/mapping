@@ -13,14 +13,18 @@ class MapBaseScript extends MonoBehaviour
 	var ambience2 : AudioClip;
 	var ambience2Volume = 1f;
 
-	var currentTime = "Morning"; // HACK: Need to move to a global state manager
+	var currentTime = "Evening"; // HACK: Need to move to a global state manager
 
 	private var obstacles = Dictionary.<String, String>();
 	private var objects = Dictionary.<String, String>();
 	private var preevents = Dictionary.<String, String>();
 	private var postevents = Dictionary.<String, String>();
 	private var exits = Dictionary.<String, String>();
-	
+
+	private var morning : SpriteRenderer;
+	private var afternoon : SpriteRenderer;
+	private var evening : SpriteRenderer;
+
 	var bgmplayer : AudioSource;
 	var bgmscript : AudioScript;
 	var ambience1player : AudioSource;
@@ -36,10 +40,22 @@ class MapBaseScript extends MonoBehaviour
 		ambience1script = GameObject.Find("Ambience 1").GetComponent(AudioScript);
 		ambience2player = GameObject.Find("Ambience 2").GetComponent(AudioSource);
 		ambience2script = GameObject.Find("Ambience 2").GetComponent(AudioScript);
+		morning = gameObject.Find("Ambience-Morning").GetComponent(SpriteRenderer) as SpriteRenderer;
+		afternoon = gameObject.Find("Ambience-Afternoon").GetComponent(SpriteRenderer) as SpriteRenderer;
+		evening = gameObject.Find("Ambience-Evening").GetComponent(SpriteRenderer) as SpriteRenderer;
 	}
 
 	function OnEnable()
 	{
+		morning.enabled = false;
+		afternoon.enabled = false;
+		evening.enabled = false;
+		if (currentTime == "Morning")
+			morning.enabled = true;
+		else if (currentTime == "Afternoon")
+			afternoon.enabled = true;
+		else
+			evening.enabled = true;
 		playBGM();
 	}
 
