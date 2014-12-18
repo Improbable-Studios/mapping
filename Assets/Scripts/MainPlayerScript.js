@@ -188,13 +188,11 @@ class MainPlayerScript extends MonoBehaviour
 			else
 				setCameraZoom(2.0);
 
-
-
 			if (!currentLocation.activeInHierarchy)
 			{
 				yield fadeInLocation(currentLocation);
 				map = currentLocation.GetComponent(MapBaseScript);
-				character.updateMap();
+				yield character.updateMap();
 			}
 			else
 				yield;

@@ -2,6 +2,109 @@
 
 import System.Collections.Generic;
 
+class DoorObject extends Object
+{
+    var map : MapBaseScript;
+    var gameObject : GameObject;
+    var sr : SpriteRenderer;
+    var anim : AnimationItem;
+    var type : AnimType;
+    var state : String; // "Opened" or "Closed"
+
+    var speed = 5.0;
+    
+    function DoorObject(map_ : MapBaseScript, gameObject_ : GameObject, sr_ : SpriteRenderer, anim_ : AnimationItem, coords : String)
+    {
+        map = map_;
+        gameObject = gameObject_;
+        sr = sr_;
+        anim = anim_;
+        type = anim.type;
+        state = "Closed";
+        setLayerOrder("Closed");
+        
+        var x : int = coords[0];
+        var a : int = 'A'[0];
+        x -= a;
+        var y : int = int.Parse(coords[1:]);
+        var newPos = gameObject.transform.position;
+        newPos.x = x;
+        newPos.y = -y + 1;
+        gameObject.transform.position = newPos;
+        sr.sprite = anim.sprites[0, 0];
+    }
+
+    function setLayerOrder(state : String)
+    {
+        if (state == "Closed")
+        {
+            if (anim.type == AnimType.FrontFrontDoor || anim.type == AnimType.FrontBackDoor)
+                sr.sortingOrder = 1;
+            else
+                sr.sortingOrder = -1;
+        }
+        else
+        {
+            if (anim.type == AnimType.FrontFrontDoor || anim.type == AnimType.BackFrontDoor)
+                sr.sortingOrder = 1;
+            else
+                sr.sortingOrder = -1;
+        }
+    }
+
+    function openDoor()
+    {
+        return openDoor(1f);
+    }
+    
+    function openDoor(speedModifier : float)
+    {
+        if (speedModifier == 0)
+        {
+            sr.sprite = anim.sprites[0, anim.sprites.GetLength(1)-1];
+        }
+        else if (state == "Closed")
+        {
+            if (anim && anim.isRunning)
+            {
+                yield map.StartCoroutine(anim.stop());
+    //          map.StopAllCoroutines();
+                anim.isRunning = false;
+            }
+            yield map.StartCoroutine(anim.run(sr, speed * speedModifier, ["Start"]));
+        }
+        setLayerOrder("Opened");
+        state = "Opened";
+        yield;
+    }
+
+    function closeDoor()
+    {
+        return closeDoor(1f);
+    }
+    
+    function closeDoor(speedModifier : float)
+    {
+        setLayerOrder("Closed");
+        if (speedModifier == 0)
+        {
+            sr.sprite = anim.sprites[0, 0];
+        }
+        else if (state == "Opened")
+        {
+            if (anim && anim.isRunning)
+            {
+                yield map.StartCoroutine(anim.stop());
+    //          map.StopAllCoroutines();
+                anim.isRunning = false;
+            }
+            yield map.StartCoroutine(anim.run(sr, speed * speedModifier, ["Stop"]));
+        }
+        state = "Closed";
+        yield;
+    }
+}
+
 class MapBaseScript extends MonoBehaviour
 {
 	var collisionMask : Texture2D;
@@ -22,6 +125,7 @@ class MapBaseScript extends MonoBehaviour
 	private var preevents = Dictionary.<String, String>();
 	private var postevents = Dictionary.<String, String>();
 	private var exits = Dictionary.<String, String>();
+	private var doors = Dictionary.<String, DoorObject>();
 
 	private var morning : SpriteRenderer;
 	private var afternoon : SpriteRenderer;
@@ -29,6 +133,8 @@ class MapBaseScript extends MonoBehaviour
 	private var activeOverlay : SpriteRenderer;
 	private var shaderOutput : GameObject;
 	private var resource : ResourceManagerScript;
+    private var doorPrefab : GameObject;
+
 
 	var bgmplayer : AudioSource;
 	var bgmscript : AudioScript;
@@ -63,7 +169,8 @@ class MapBaseScript extends MonoBehaviour
 		ambience2player = GameObject.Find("Ambience 2").GetComponent(AudioSource);
 		ambience2script = GameObject.Find("Ambience 2").GetComponent(AudioScript);
 		shaderOutput = gameObject.Find("Shader Output");
-		resource = gameObject.Find("Manager").GetComponent(ResourceManagerScript) as ResourceManagerScript;
+        doorPrefab = Resources.Load("DoorPrefab") as GameObject;
+        resource = gameObject.Find("Manager").GetComponent(ResourceManagerScript) as ResourceManagerScript;
 		morning = gameObject.Find("Ambience-Morning").GetComponent(SpriteRenderer) as SpriteRenderer;
 		afternoon = gameObject.Find("Ambience-Afternoon").GetComponent(SpriteRenderer) as SpriteRenderer;
 		evening = gameObject.Find("Ambience-Evening").GetComponent(SpriteRenderer) as SpriteRenderer;
@@ -164,8 +271,23 @@ class MapBaseScript extends MonoBehaviour
     	var pnglist = resource.getFilesOfType(path+"/Doors/", ".png");
 	    if (pnglist && pnglist.Length > 0)
 	    {
-	    	for (var p : String in pnglist)
-	    		Debug.Log("DOOR in " + path + " -- " + p);
+            var ss = SpriteSkin(path, path+"/Doors/", pnglist);
+            ss.loadTexture();
+            for (var k in ss.anims.Keys)
+            {
+                var d = gameObject.Instantiate(doorPrefab);
+                d.transform.parent = transform;
+                d.name = "Door " + k;
+                var sr : SpriteRenderer = d.GetComponent(SpriteRenderer) as SpriteRenderer;
+                tokens = k.Split('_'[0]);
+                var doorObject = DoorObject(this, d, sr, ss.anims[k], tokens[0]);
+                for (var i=0; i<tokens.Length; i++)
+                {
+                    if (i==0 && tokens.Length > 1)
+                        continue;
+                    doors[tokens[i]] = doorObject;
+                }
+            }
 	    }
 	}
 
@@ -203,6 +325,27 @@ class MapBaseScript extends MonoBehaviour
 		}
 		return newPos;
 	}
+
+    function previousPos(pos : Vector3, direction : String) : Vector3
+    {
+        var newPos = pos;
+        switch (direction)
+        {
+        case "North":
+            newPos.y--;
+            break;
+        case "South":
+            newPos.y++;
+            break;
+        case "West":
+            newPos.x++;
+            break;
+        case "East":
+            newPos.x--;
+            break;
+        }
+        return newPos;
+    }
 
 	function getCoords(pos : Vector3) : String
 	{
@@ -266,6 +409,47 @@ class MapBaseScript extends MonoBehaviour
 			return false;
 		}
 	}
+
+    function checkDoorEnteringEvent(pos : Vector3, direction : String) : DoorObject
+    {
+        var newPos = nextPos(pos, direction);
+        var coords = getCoords(newPos);
+        if (doors.ContainsKey(coords))
+            return doors[coords];
+
+        coords = getCoordsObject(pos, direction);
+        if (doors.ContainsKey(coords))
+            return doors[coords];
+
+        return null;
+    }
+
+    function checkAtDoorEvent(pos : Vector3, direction : String) : DoorObject
+    {
+        var coords = getCoords(pos);
+        if (doors.ContainsKey(coords))
+            return doors[coords];
+
+        coords = getCoordsObstacle(pos, direction);
+        if (doors.ContainsKey(coords))
+            return doors[coords];
+
+        return null;
+    }
+
+    function checkDoorLeftEvent(pos : Vector3, direction : String) : DoorObject
+    {
+        var newPos = previousPos(pos, direction);
+        var coords = getCoords(newPos);
+        if (doors.ContainsKey(coords))
+            return doors[coords];
+
+        coords = getCoordsObject(pos, direction);
+        if (doors.ContainsKey(coords))
+            return doors[coords];
+
+        return null;
+    }
 
 	function checkPreEvent(pos : Vector3, direction : String) : String
 	{

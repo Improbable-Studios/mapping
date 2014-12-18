@@ -42,6 +42,20 @@ class CharacterScript extends MonoBehaviour
 	function updateMap()
 	{
 		map = mapManager.getRoomObject().GetComponent(MapBaseScript);
+        var door = map.checkAtDoorEvent(transform.position, direction);
+        if (door != null)
+        {
+            yield StartCoroutine(door.openDoor(0f));
+        }
+        else
+        {
+            door = map.checkDoorLeftEvent(transform.position, direction);
+            if (door != null)
+            {
+                yield StartCoroutine(door.openDoor(0f));
+                yield StartCoroutine(door.closeDoor());
+            }
+        }
 	}
 
 	function updateCamera()
@@ -120,6 +134,12 @@ class CharacterScript extends MonoBehaviour
 				}
 			}
 		}
+        
+        var door = map.checkDoorEnteringEvent(transform.position, direction);
+        if (door != null)
+        {
+            yield StartCoroutine(door.openDoor());
+        }
 
 		isMoving = true;
 		moveVector = dest - transform.position;
@@ -165,6 +185,11 @@ class CharacterScript extends MonoBehaviour
 					var name = map.checkPostEvent(transform.position, direction);
 					if (name != "")
 						map.StartCoroutine(name);
+                    var door = map.checkDoorLeftEvent(transform.position, direction);
+                    if (door != null && door != map.checkAtDoorEvent(transform.position, direction))
+                    {                        
+                        yield StartCoroutine(door.closeDoor());
+                    }
 				}
 				break;
 			}

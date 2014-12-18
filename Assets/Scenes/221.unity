@@ -103,7 +103,6 @@ MonoBehaviour:
   m_Script: {fileID: 1301386320, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Priority: 3
   ignoreReversedGraphics: 1
   blockingObjects: 0
   m_BlockingMask:
@@ -152,6 +151,7 @@ CanvasGroup:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 128341194}
+  m_Enabled: 1
   m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
@@ -736,7 +736,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91100e4bf132d4924892937ecb896151, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  directory: {fileID: 4900000, guid: 166023b1c0b2f4632a4fc8932403d3ec, type: 3}
+  directory: {fileID: 4900000, guid: d63d7ce8a3a690541acaf1b8cd2b35f6, type: 3}
 --- !u!114 &934150155
 MonoBehaviour:
   m_ObjectHideFlags: 0

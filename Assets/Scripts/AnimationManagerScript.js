@@ -4,7 +4,9 @@ import System.Collections.Generic;
 import System.IO;
 import SimpleJSON;
 
-enum AnimType{Forward, Directional, Moving, Idle, ERROR};
+enum AnimType{  Forward,        Directional,    Moving,         Idle,
+                FrontFrontDoor, FrontBackDoor,  BackFrontDoor,  BackBackDoor,
+                ERROR};
 enum IdleType{	FacingSouthLookRight, 	FacingSouthLookAhead, 	FacingSouthLookLeft,
 				FacingWestLookLeft, 	FacingWestLookAhead, 	FacingWestLookRight,
 				FacingNorthLookLeft, 	FacingNorthLookAhead, 	FacingNorthLookRight,
@@ -84,6 +86,14 @@ class AnimationItem extends Object
 			type = AnimType.Moving;
 		else if (type_ == "Idle")
 			type = AnimType.Idle;
+        else if (type_ == "Front" ||type_ == "FrontFront")
+            type = AnimType.FrontFrontDoor;
+        else if (type_ == "FrontBack")
+            type = AnimType.FrontBackDoor;
+        else if (type_ == "BackFront")
+            type = AnimType.BackFrontDoor;
+        else if (type_ == "Back"  || type_ == "BackBack")
+            type = AnimType.BackBackDoor;
 		else
 		{
 			type = AnimType.ERROR;
@@ -204,6 +214,17 @@ class AnimationItem extends Object
 			north = size * 2;
 			east = size * 3;
 		}
+
+        if (type == AnimType.FrontFrontDoor || type == AnimType.FrontBackDoor || type == AnimType.BackFrontDoor || type == AnimType.BackBackDoor)
+        {
+            indexArray = new int[sprites.GetLength(1)];
+            for (i=0; i < sprites.GetLength(1); i++)
+                indexArray[i] = i;
+            progressive = indexArray;
+            types.Add("Start");
+            types.Add("Stop");
+        }
+
 	}
 
 	function run(sr : SpriteRenderer, speed : float, options : String[])
@@ -273,7 +294,7 @@ class AnimationItem extends Object
 
 			sr.sprite = sprites[row_index, col_index];
 		}
-		else if (type == AnimType.Forward || type == AnimType.Directional)
+		else if (type == AnimType.Forward || type == AnimType.Directional || type == AnimType.FrontFrontDoor || type == AnimType.FrontBackDoor || type == AnimType.BackFrontDoor || type == AnimType.BackBackDoor)
 		{
 			if ("Random" in options)
 			{
@@ -674,7 +695,7 @@ class AnimationManagerScript extends MonoBehaviour
 	        animations[dir] = new Dictionary.<String, SpriteSkin>();
 		    var path = pathToCharacters + "/" + dir + "/Sprites/";
 	    	var pnglist = resource.getFilesOfType(path, ".png");
-		    if (pnglist.Length > 0)
+		    if (pnglist && pnglist.Length > 0)
 		    {
 		    	if ("Moving - Walk" in pnglist)
 		    	{

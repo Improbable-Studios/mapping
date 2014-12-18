@@ -58,7 +58,7 @@ function getDirectoriesInPath(path : String)
 {
 	var J = getSubJSON(path);
 	if (J == null)
-		return null;
+		return [];
 	var res = new String[J["dirlist"].Count];
 	for (var i=0; i<J["dirlist"].Count; i++)
 		res[i] = J["dirlist"][i];

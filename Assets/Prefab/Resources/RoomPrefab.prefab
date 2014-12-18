@@ -192,12 +192,14 @@ MonoBehaviour:
   ambience1Volume: 1
   ambience2: {fileID: 0}
   ambience2Volume: 1
+  doorPrefab: {fileID: 0}
   bgmplayer: {fileID: 0}
   bgmscript: {fileID: 0}
   ambience1player: {fileID: 0}
   ambience1script: {fileID: 0}
   ambience2player: {fileID: 0}
   ambience2script: {fileID: 0}
+  animManager: {fileID: 0}
 --- !u!212 &21200000
 SpriteRenderer:
   m_ObjectHideFlags: 1
