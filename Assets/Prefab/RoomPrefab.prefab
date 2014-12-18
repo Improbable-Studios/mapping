@@ -192,7 +192,6 @@ MonoBehaviour:
   ambience1Volume: 1
   ambience2: {fileID: 0}
   ambience2Volume: 1
-  currentTime: Morning
   bgmplayer: {fileID: 0}
   bgmscript: {fileID: 0}
   ambience1player: {fileID: 0}
@@ -217,7 +216,7 @@ SpriteRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayerID: 3660812647
+  m_SortingLayerID: 1253751137
   m_SortingOrder: 0
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -261,7 +260,7 @@ SpriteRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayerID: 3660812647
+  m_SortingLayerID: 1253751137
   m_SortingOrder: 0
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -283,7 +282,7 @@ SpriteRenderer:
   m_UseLightProbes: 0
   m_LightProbeAnchor: {fileID: 0}
   m_ScaleInLightmap: 1
-  m_SortingLayerID: 3660812647
+  m_SortingLayerID: 1253751137
   m_SortingOrder: 0
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

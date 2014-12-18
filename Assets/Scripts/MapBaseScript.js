@@ -15,6 +15,8 @@ class MapBaseScript extends MonoBehaviour
 
 	private var currentTime = "Evening"; // HACK: Need to move to a global state manager
 
+	private var path : String;
+
 	private var obstacles = Dictionary.<String, String>();
 	private var objects = Dictionary.<String, String>();
 	private var preevents = Dictionary.<String, String>();
@@ -24,7 +26,9 @@ class MapBaseScript extends MonoBehaviour
 	private var morning : SpriteRenderer;
 	private var afternoon : SpriteRenderer;
 	private var evening : SpriteRenderer;
+	private var activeOverlay : SpriteRenderer;
 	private var shaderOutput : GameObject;
+	private var resource : ResourceManagerScript;
 
 	var bgmplayer : AudioSource;
 	var bgmscript : AudioScript;
@@ -39,37 +43,42 @@ class MapBaseScript extends MonoBehaviour
 
 	function OnEnable()
 	{
-		if (!morning)
+		if (shaderOutput == null)
 			return;
-
-		morning.enabled = false;
-		afternoon.enabled = false;
-		evening.enabled = false;
-		if (morning.sprite && currentTime == "Morning")
-			morning.enabled = true;
-		else if (afternoon.sprite && currentTime == "Afternoon")
-			afternoon.enabled = true;
-		else if (evening.sprite)
-			evening.enabled = true;
-		if (morning.enabled || afternoon.enabled || evening.enabled)
+		if (activeOverlay)
 			shaderOutput.SetActive(true);
 		else
 			shaderOutput.SetActive(false);
 		playBGM();
 	}
 
-	function initialise()
+	function initialise(path_ : String)
 	{
+		path = path_;
+
 		bgmplayer = GameObject.Find("Background Music").GetComponent(AudioSource);
 		bgmscript = GameObject.Find("Background Music").GetComponent(AudioScript);
 		ambience1player = GameObject.Find("Ambience 1").GetComponent(AudioSource);
 		ambience1script = GameObject.Find("Ambience 1").GetComponent(AudioScript);
 		ambience2player = GameObject.Find("Ambience 2").GetComponent(AudioSource);
 		ambience2script = GameObject.Find("Ambience 2").GetComponent(AudioScript);
+		shaderOutput = gameObject.Find("Shader Output");
+		resource = gameObject.Find("Manager").GetComponent(ResourceManagerScript) as ResourceManagerScript;
 		morning = gameObject.Find("Ambience-Morning").GetComponent(SpriteRenderer) as SpriteRenderer;
 		afternoon = gameObject.Find("Ambience-Afternoon").GetComponent(SpriteRenderer) as SpriteRenderer;
 		evening = gameObject.Find("Ambience-Evening").GetComponent(SpriteRenderer) as SpriteRenderer;
-		shaderOutput = gameObject.Find("Shader Output");
+		morning.enabled = false;
+		afternoon.enabled = false;
+		evening.enabled = false;
+		activeOverlay = null;
+		if (morning.sprite && currentTime == "Morning")
+			activeOverlay = morning;
+		else if (afternoon.sprite && currentTime == "Afternoon")
+			activeOverlay = afternoon;
+		else if (evening.sprite && currentTime == "Evening")
+			activeOverlay = evening;
+		if (activeOverlay)
+			activeOverlay.enabled = true;
 
 		if (!text)
 		{
@@ -151,6 +160,13 @@ class MapBaseScript extends MonoBehaviour
 				}
 			}
 		}
+		
+    	var pnglist = resource.getFilesOfType(path+"/Doors/", ".png");
+	    if (pnglist && pnglist.Length > 0)
+	    {
+	    	for (var p : String in pnglist)
+	    		Debug.Log("DOOR in " + path + " -- " + p);
+	    }
 	}
 
 	function playBGM()

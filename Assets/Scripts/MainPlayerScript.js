@@ -12,6 +12,7 @@ class MainPlayerScript extends MonoBehaviour
 	private var isChangingLocation = false;
 	private var currentLocation : GameObject;
 
+	private var cam : CameraScript;
 	private var map : MapBaseScript;
 	private var character : CharacterScript;
 	private var mapManager : MapManagerScript;
@@ -21,12 +22,13 @@ class MainPlayerScript extends MonoBehaviour
 	
 	function Awake()
 	{
+		cam = GameObject.Find("Main Camera").GetComponent(CameraScript);
 		character = GetComponent(CharacterScript);
 		mapManager = GameObject.Find("Manager").GetComponent(MapManagerScript);
 		sr = GetComponent(SpriteRenderer);
 		sr.enabled = false;
-		setCameraZoom(2.0);
 		canvas = GameObject.Find("Canvas").GetComponent(CanvasGroup);
+		setCameraZoom(2.0);
 	}
 
 	function Start ()
@@ -107,7 +109,7 @@ class MainPlayerScript extends MonoBehaviour
 
 	function setCameraZoom(zoom : float)
 	{
-        Camera.main.orthographicSize = Screen.height / (2.0 * 32.0 * zoom);
+        cam.setCameraZoom(zoom, Camera.main);
 	}
 
 	function move(direction : String)

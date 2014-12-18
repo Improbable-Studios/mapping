@@ -47,13 +47,7 @@ class CharacterScript extends MonoBehaviour
 	function updateCamera()
 	{
 		if (transform == cameraScript.follow.transform)
-		{
-			var newCameraPos = transform.position;
-			newCameraPos.x += 0.5f;
-			newCameraPos.y -= 0.5f;
-			newCameraPos.z = cameraScript.transform.position.z;
-			cameraScript.transform.position = newCameraPos;
-		}
+			cameraScript.lookAt(gameObject);
 	}
 
 	function initAnim()
