@@ -11,10 +11,13 @@ class MapManagerScript extends MonoBehaviour
 
 	var pathToMaps = "maps";
 	var preLoadAllMaps = true;
-	var rooms : GameObject;
-	var roomPrefab : GameObject;
+    var roomsObject : GameObject;
+    var charactersObject : GameObject;
+    var roomPrefab : GameObject;
+    var characterPrefab : GameObject;
 
-	var locations = Dictionary.<String, Dictionary.<String, GameObject> >();
+    var locations = Dictionary.<String, Dictionary.<String, GameObject> >();
+    var characters = Dictionary.<String, GameObject>();
 	
 	var currentLocation = "221"; // HACK: Need to move to global state manager
 	var currentRoom = "Interior/221B/Stairwell"; // HACK: Need to move to global state manager
@@ -67,7 +70,7 @@ class MapManagerScript extends MonoBehaviour
     	var eveningTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/Ambience-Evening") as Texture2D;
     	var configText : TextAsset = Resources.Load(resourcePrefix + "/config") as TextAsset;
 		var rect = Rect(0f, backTexture.height, backTexture.width, -backTexture.height);
-		var r = rooms.Instantiate(roomPrefab);
+		var r = roomsObject.Instantiate(roomPrefab);
 		r.Find("back").GetComponent(SpriteRenderer).sprite = Sprite.Create(backTexture, rect, pivot, 32);
 		r.Find("front").GetComponent(SpriteRenderer).sprite = Sprite.Create(frontTexture, rect, pivot, 32);
 		if (morningTexture)
@@ -89,16 +92,16 @@ class MapManagerScript extends MonoBehaviour
 		script.text = configText;
 		script.initialise(resourcePrefix);
 		r.SetActive(false);
-		r.transform.parent = rooms.transform;
+		r.transform.parent = roomsObject.transform;
 		r.name = roomName;
 		return r;
 	}
 
 	function loadLocation(loc : String)
 	{
-		var childs : int = rooms.transform.childCount;
+		var childs : int = roomsObject.transform.childCount;
 		for (var i = childs - 1; i >= 0; i--)
-			GameObject.DestroyImmediate(rooms.transform.GetChild(i).gameObject);
+			GameObject.DestroyImmediate(roomsObject.transform.GetChild(i).gameObject);
 		currentLocation = loc;
 
 		var pivot : Vector2 = Vector2(0f, 0f); //top left;
@@ -150,4 +153,39 @@ class MapManagerScript extends MonoBehaviour
 	{
 		return locations[currentLocation][room];
 	}
+
+    function loadCharacter(name : String, coords : String, skin : String, animation : String)
+    {
+        if (characters.ContainsKey(name))
+            var c : GameObject = characters[name] as GameObject;
+        else
+        {
+            c = charactersObject.Instantiate(characterPrefab);
+            c.transform.parent = charactersObject.transform;
+            c.name = name;
+            characters[name] = c;
+        }
+        c.SetActive(true);
+        var cs : CharacterScript = c.GetComponent(CharacterScript) as CharacterScript;
+        cs.setCharacter(name, coords, skin, animation);
+        cs.setVisible(true);
+        return cs;
+    }
+    
+    function getCharacterObject(name : String)
+    {
+        if (characters.ContainsKey(name))
+            return characters[name] as GameObject;
+        else
+            return null;
+    }
+    
+    function disableCharacters()
+    {
+        for (var c in characters.Values)
+        {
+            var cs : CharacterScript = c.GetComponent(CharacterScript) as CharacterScript;
+            cs.disable();
+        }
+    }
 }

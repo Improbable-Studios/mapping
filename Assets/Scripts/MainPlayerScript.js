@@ -49,7 +49,7 @@ class MainPlayerScript extends MonoBehaviour
 
 		sr.enabled = true;
 		character.move("South", 4, true);
-		ScreenFaderScript.fadeIn(1f, Color.black);
+		ScreenFaderScript.fadeIn(1f, Color.black);        
 	}
 
 	function Update ()
@@ -180,6 +180,7 @@ class MainPlayerScript extends MonoBehaviour
 				currentRoom = mapManager.getRoomObject();
 			}
 
+            mapManager.disableCharacters();
 			if (location.StartsWith("Exterior"))
 				setCameraZoom(1.0);
 			else

@@ -654,17 +654,17 @@ class AnimatedObject extends Object
 	
 	function isRunning()
 	{
-		return currentAnimation.isRunning;
+		return currentAnimation && currentAnimation.isRunning;
 	}
 
 	function stop()
 	{
-		yield currentAnimation.stop();
+		return currentAnimation.stop();
 	}
 
 	function stopAfterFinish()
 	{
-		yield currentAnimation.stopAfterFinish();
+		return currentAnimation.stopAfterFinish();
 	}
 
 	function waitTillFinished()

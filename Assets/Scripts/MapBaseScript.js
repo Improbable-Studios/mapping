@@ -32,16 +32,16 @@ class DoorObject extends Object
         if (state == "Closed")
         {
             if (anim.type == AnimType.FrontFrontDoor || anim.type == AnimType.FrontBackDoor)
-                sr.sortingOrder = 1;
+                sr.sortingOrder = 100;
             else
-                sr.sortingOrder = -1;
+                sr.sortingOrder = -100;
         }
         else
         {
             if (anim.type == AnimType.FrontFrontDoor || anim.type == AnimType.BackFrontDoor)
-                sr.sortingOrder = 1;
+                sr.sortingOrder = 100;
             else
-                sr.sortingOrder = -1;
+                sr.sortingOrder = -100;
         }
     }
 
@@ -125,14 +125,17 @@ class MapBaseScript extends MonoBehaviour
 	private var exits = Dictionary.<String, String>();
     private var doors = Dictionary.<String, DoorObject>();
     private var people = Dictionary.<String, String>();
+    private var peopleAnim = Dictionary.<String, String>();
 
 	private var morning : SpriteRenderer;
 	private var afternoon : SpriteRenderer;
 	private var evening : SpriteRenderer;
 	private var activeOverlay : SpriteRenderer;
 	private var shaderOutput : GameObject;
-	private var resource : ResourceManagerScript;
     private var doorPrefab : GameObject;
+
+    private var resource : ResourceManagerScript;
+    private var manager : MapManagerScript;
 
 	var currentDoor : DoorObject;
 	var bgmplayer : AudioSource;
@@ -156,12 +159,19 @@ class MapBaseScript extends MonoBehaviour
 			shaderOutput.SetActive(false);
 		if (currentDoor && currentDoor.map)
 			currentDoor.closeDoorInstant();
+        for (var k in people.Keys)
+        {
+            var nameAndSkin = people[k].Split();
+            manager.loadCharacter(nameAndSkin[0], k, nameAndSkin[1], peopleAnim[nameAndSkin[0]]);
+        }
 		playBGM();
 	}
 
 	function initialise(path_ : String)
 	{
 		path = path_;
+        resource = ResourceManagerScript.instance;
+        manager = MapManagerScript.instance;
 
 		bgmplayer = GameObject.Find("Background Music").GetComponent(AudioSource);
 		bgmscript = GameObject.Find("Background Music").GetComponent(AudioScript);
@@ -171,7 +181,6 @@ class MapBaseScript extends MonoBehaviour
 		ambience2script = GameObject.Find("Ambience 2").GetComponent(AudioScript);
 		shaderOutput = gameObject.Find("Shader Output");
         doorPrefab = Resources.Load("DoorPrefab") as GameObject;
-        resource = ResourceManagerScript.instance;
 		morning = gameObject.Find("Ambience-Morning").GetComponent(SpriteRenderer) as SpriteRenderer;
 		afternoon = gameObject.Find("Ambience-Afternoon").GetComponent(SpriteRenderer) as SpriteRenderer;
 		evening = gameObject.Find("Ambience-Evening").GetComponent(SpriteRenderer) as SpriteRenderer;
@@ -250,6 +259,14 @@ class MapBaseScript extends MonoBehaviour
 						exits[coords] = name + ' ' + dest;
 					}
 				}
+                else if (type == "Person")
+                {
+                    tokens = val.Split(' '[0]);
+                    if (tokens.Length < 3)
+                        Debug.LogWarning(path + " Person has incorrect config: " + line);
+                    people[tokens[0]] = name + " " + tokens[1];
+                    peopleAnim[name] = String.Join(" ", tokens[2:]);
+                }
 				else
 				{
 					tokens = val.Split(' '[0]);
@@ -302,6 +319,8 @@ class MapBaseScript extends MonoBehaviour
 	function isWalkable(pos : Vector3, direction : String) : boolean
 	{
 		// Check other characters
+        if (people.ContainsKey(Grid.getCoords(pos)))
+            return false;
 
 		// Check obstacles
 		if (obstacles.ContainsKey(Grid.getCoords(pos)))

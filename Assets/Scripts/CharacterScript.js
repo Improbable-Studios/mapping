@@ -10,7 +10,8 @@ class CharacterScript extends MonoBehaviour
 	
 	var useMapCollisionMask = false;
 	var triggerPreEvents = false;
-	var triggerPostEvents = false;
+    var triggerPostEvents = false;
+    var triggerDoors = false;
 
 	private var map : MapBaseScript;
 
@@ -31,8 +32,8 @@ class CharacterScript extends MonoBehaviour
 
 	function Start ()
 	{
-        animScript = AnimationManagerScript.instance;
-		initAnim();
+        if (anim == null)
+    		initAnim();
 		updateCamera();
 	}
 
@@ -45,21 +46,29 @@ class CharacterScript extends MonoBehaviour
 	{
         warpTo(coords);
         map = map_;
-        var door = map.checkAtDoorEvent(transform.position, direction);
-        if (door != null)
+        if (triggerDoors)
         {
-            door.openDoorInstant();
-        }
-        else
-        {
-            door = map.checkDoorLeftEvent(transform.position, direction);
+            var door = map.checkAtDoorEvent(transform.position, direction);
             if (door != null)
             {
                 door.openDoorInstant();
-                StartCoroutine(door.closeDoor());
+            }
+            else
+            {
+                door = map.checkDoorLeftEvent(transform.position, direction);
+                if (door != null)
+                {
+                    door.openDoorInstant();
+                    StartCoroutine(door.closeDoor());
+                }
             }
         }
 	}
+
+    function setVisible(flag : boolean)
+    {
+        sr.enabled = flag;
+    }
 
 	function updateCamera()
 	{
@@ -73,17 +82,18 @@ class CharacterScript extends MonoBehaviour
         updateCamera();
     }
 
-    function setCharacter(coords : String, character_ : String, skin_ : String, animation : String)
+    function setCharacter(character_ : String, coords : String, skin_ : String, animation : String)
     {
-        sr.enabled = false;
         warpTo(coords);
-        character = character_;
-        skin = skin_;
-        initAnim();
+        if ((character != character_) || (skin != skin_))
+        {
+            character = character_;
+            skin = skin_;
+            initAnim();
+        }
         var tokens = animation.Split();
         if (tokens[0] == "RandomWalk")
         {
-            moveAnimation = "Walk";
             if (tokens.Length == 2)
                 moveAnimation = tokens[1];
             // HACK: Will add actual random walk some time in the future
@@ -91,8 +101,6 @@ class CharacterScript extends MonoBehaviour
         }
         else if (tokens[0] == "Idle")
         {
-            moveAnimation = "Walk";
-            direction = "South";
             if (tokens.Length > 1)
                 direction = tokens[1];
             if (tokens.Length > 2)
@@ -101,12 +109,24 @@ class CharacterScript extends MonoBehaviour
         }
         else
         {
-            StartCoroutine(anim.run(tokens[0], ["Loop"]));
+            StartCoroutine(anim.run(tokens[0], tokens[1:]));
         }
+        sr.enabled = true;
+    }
+
+    function disable()
+    {
+        sr.enabled = false;
+        if (anim && anim.isRunning())
+        {
+            yield StartCoroutine(anim.stop());
+        }
+        gameObject.SetActive(false);
     }
 
 	function initAnim()
 	{
+        animScript = AnimationManagerScript.instance;
 		if (character == "Random")
 		{
 			character = animScript.listOfCharacters()[Random.Range(0, animScript.animations.Count)];
@@ -116,7 +136,6 @@ class CharacterScript extends MonoBehaviour
 			skin = animScript.listOfSkins(character)[Random.Range(0, animScript.animations[character].Count)];
 		anim = animScript.getAnimatedObject(sr, character, skin);
 		anim.speed = speed;
-		StartCoroutine(anim.run(moveAnimation, [direction, "Idle"]));
 	}
 
 	function listOfAnimation()
@@ -180,10 +199,11 @@ class CharacterScript extends MonoBehaviour
 		moveVector = dest - transform.position;
 		while (distance > 0)
 		{
-            var door = map.checkDoorEnteringEvent(transform.position, direction);
-            if (door != null)
+            if (triggerDoors)
             {
-                yield StartCoroutine(door.openDoor());
+                var door = map.checkDoorEnteringEvent(transform.position, direction);
+                if (door != null)
+                    yield StartCoroutine(door.openDoor());
             }
 			origin = transform.position;
 			dest = Grid.nextPos(transform.position, direction);
@@ -226,11 +246,14 @@ class CharacterScript extends MonoBehaviour
 					if (name != "")
 						map.StartCoroutine(name);
 				}
-			    var door = map.checkDoorLeftEvent(transform.position, direction);
-	            if (door != null && door != map.checkAtDoorEvent(transform.position, direction))
-	            {                        
-	                StartCoroutine(door.closeDoor());
-	            }
+                if (triggerDoors)
+                {
+    			    var door = map.checkDoorLeftEvent(transform.position, direction);
+    	            if (door != null && door != map.checkAtDoorEvent(transform.position, direction))
+    	            {                        
+    	                StartCoroutine(door.closeDoor());
+    	            }
+                }
 				break;
 			}
 			yield;
