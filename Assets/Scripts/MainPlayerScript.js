@@ -18,7 +18,7 @@ class MainPlayerScript extends MonoBehaviour
 	private var mapManager : MapManagerScript;
 	private var sr : SpriteRenderer;
 
-	private var canvas : CanvasGroup;
+	private var quitMenu : CanvasGroup;
 	
 	function Awake()
 	{
@@ -27,7 +27,7 @@ class MainPlayerScript extends MonoBehaviour
 		character = GetComponent(CharacterScript);
 		sr = GetComponent(SpriteRenderer);
 		sr.enabled = false;
-		canvas = GameObject.Find("Canvas").GetComponent(CanvasGroup);
+		quitMenu = GameObject.Find("Quit Menu").GetComponent(CanvasGroup);
 	}
 
 	function Start ()
@@ -36,8 +36,8 @@ class MainPlayerScript extends MonoBehaviour
         var room = "Interior/221B/Stairwell";
         var coords = "F2";
 
-		canvas.alpha = 0f;
-		canvas.interactable = false;
+		quitMenu.alpha = 0f;
+		quitMenu.interactable = false;
         yield ScreenFaderScript.fadeOut(0.0f, Color.black);
 
         mapManager = MapManagerScript.instance;
@@ -90,8 +90,8 @@ class MainPlayerScript extends MonoBehaviour
 		else if (Input.GetKeyDown(KeyCode.Escape))
 		{
 			yield ScreenFaderScript.fadeOut(0.5f, Color.black);
-			canvas.alpha = 1f;
-			canvas.interactable = true;
+			quitMenu.alpha = 1f;
+			quitMenu.interactable = true;
 		}
 		else if (Input.GetKeyDown(KeyCode.Tab))
 		{
@@ -104,8 +104,8 @@ class MainPlayerScript extends MonoBehaviour
 
 	function cancelQuit()
 	{
-		canvas.alpha = 0f;
-		canvas.interactable = false;
+		quitMenu.alpha = 0f;
+		quitMenu.interactable = false;
 		ScreenFaderScript.fadeIn(0.5f);
 	}
 
