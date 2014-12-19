@@ -23,14 +23,7 @@ class DoorObject extends Object
         state = "Closed";
         setLayerOrder("Closed");
         
-        var x : int = coords[0];
-        var a : int = 'A'[0];
-        x -= a;
-        var y : int = int.Parse(coords[1:]);
-        var newPos = gameObject.transform.position;
-        newPos.x = x;
-        newPos.y = -y + 1;
-        gameObject.transform.position = newPos;
+        gameObject.transform.position = Grid.getPos(coords);
         sr.sprite = anim.sprites[0, 0];
     }
 
@@ -52,6 +45,13 @@ class DoorObject extends Object
         }
     }
 
+   function openDoorInstant()
+    {
+        setLayerOrder("Opened");
+        sr.sprite = anim.sprites[0, anim.sprites.GetLength(1)-1];
+        state = "Opened";
+    }
+
     function openDoor()
     {
         return openDoor(1f);
@@ -59,23 +59,25 @@ class DoorObject extends Object
     
     function openDoor(speedModifier : float)
     {
-        if (speedModifier == 0)
+        if (anim && anim.isRunning)
         {
-            sr.sprite = anim.sprites[0, anim.sprites.GetLength(1)-1];
+            map.StopCoroutine("anim.run");
+            anim.isRunning = false;
+            closeDoorInstant();
         }
-        else if (state == "Closed")
-        {
-            if (anim && anim.isRunning)
-            {
-                yield map.StartCoroutine(anim.stop());
-    //          map.StopAllCoroutines();
-                anim.isRunning = false;
-            }
+        if (speedModifier > 0f && state == "Closed")
             yield map.StartCoroutine(anim.run(sr, speed * speedModifier, ["Start"]));
-        }
         setLayerOrder("Opened");
         state = "Opened";
         yield;
+    }
+
+    function closeDoorInstant()
+    {
+        setLayerOrder("Closed");
+        sr.sprite = anim.sprites[0, 0];
+        state = "Closed";
+        map.currentDoor = null;
     }
 
     function closeDoor()
@@ -85,22 +87,18 @@ class DoorObject extends Object
     
     function closeDoor(speedModifier : float)
     {
+    	map.currentDoor = this;
+        if (anim && anim.isRunning)
+        {
+            map.StopCoroutine("anim.run");
+            anim.isRunning = false;
+            openDoorInstant();
+        }
         setLayerOrder("Closed");
-        if (speedModifier == 0)
-        {
-            sr.sprite = anim.sprites[0, 0];
-        }
-        else if (state == "Opened")
-        {
-            if (anim && anim.isRunning)
-            {
-                yield map.StartCoroutine(anim.stop());
-    //          map.StopAllCoroutines();
-                anim.isRunning = false;
-            }
+        if (speedModifier > 0f && state == "Opened")
             yield map.StartCoroutine(anim.run(sr, speed * speedModifier, ["Stop"]));
-        }
         state = "Closed";
+        map.currentDoor = null;
         yield;
     }
 }
@@ -125,7 +123,8 @@ class MapBaseScript extends MonoBehaviour
 	private var preevents = Dictionary.<String, String>();
 	private var postevents = Dictionary.<String, String>();
 	private var exits = Dictionary.<String, String>();
-	private var doors = Dictionary.<String, DoorObject>();
+    private var doors = Dictionary.<String, DoorObject>();
+    private var people = Dictionary.<String, String>();
 
 	private var morning : SpriteRenderer;
 	private var afternoon : SpriteRenderer;
@@ -135,7 +134,7 @@ class MapBaseScript extends MonoBehaviour
 	private var resource : ResourceManagerScript;
     private var doorPrefab : GameObject;
 
-
+	var currentDoor : DoorObject;
 	var bgmplayer : AudioSource;
 	var bgmscript : AudioScript;
 	var ambience1player : AudioSource;
@@ -155,6 +154,8 @@ class MapBaseScript extends MonoBehaviour
 			shaderOutput.SetActive(true);
 		else
 			shaderOutput.SetActive(false);
+		if (currentDoor && currentDoor.map)
+			currentDoor.closeDoorInstant();
 		playBGM();
 	}
 
@@ -170,7 +171,7 @@ class MapBaseScript extends MonoBehaviour
 		ambience2script = GameObject.Find("Ambience 2").GetComponent(AudioScript);
 		shaderOutput = gameObject.Find("Shader Output");
         doorPrefab = Resources.Load("DoorPrefab") as GameObject;
-        resource = gameObject.Find("Manager").GetComponent(ResourceManagerScript) as ResourceManagerScript;
+        resource = ResourceManagerScript.instance;
 		morning = gameObject.Find("Ambience-Morning").GetComponent(SpriteRenderer) as SpriteRenderer;
 		afternoon = gameObject.Find("Ambience-Afternoon").GetComponent(SpriteRenderer) as SpriteRenderer;
 		evening = gameObject.Find("Ambience-Evening").GetComponent(SpriteRenderer) as SpriteRenderer;
@@ -298,85 +299,14 @@ class MapBaseScript extends MonoBehaviour
 		ambience2script.changeClip(ambience2, ambience2Volume);
 	}
 
-	function nextChar(character : String, increment : int) : String
-	{
-		var intValue : int = character[0];
-	    var charValue = System.Convert.ToChar(intValue + increment);
-	    return System.Convert.ToString(charValue);
-	}
-
-	function nextPos(pos : Vector3, direction : String) : Vector3
-	{
-		var newPos = pos;
-		switch (direction)
-		{
-		case "North":
-			newPos.y++;
-			break;
-		case "South":
-			newPos.y--;
-			break;
-		case "West":
-			newPos.x--;
-			break;
-		case "East":
-			newPos.x++;
-			break;
-		}
-		return newPos;
-	}
-
-    function previousPos(pos : Vector3, direction : String) : Vector3
-    {
-        var newPos = pos;
-        switch (direction)
-        {
-        case "North":
-            newPos.y--;
-            break;
-        case "South":
-            newPos.y++;
-            break;
-        case "West":
-            newPos.x++;
-            break;
-        case "East":
-            newPos.x--;
-            break;
-        }
-        return newPos;
-    }
-
-	function getCoords(pos : Vector3) : String
-	{
-		var x = pos.x;
-		var y = pos.y;
-		return nextChar('A', x) + (1-y);
-	}
-
-	function getCoordsObstacle(pos : Vector3, direction : String) : String
-	{
-		var x = pos.x;
-		var y = pos.y;
-		return nextChar('A', x) + (1-y) + "_" + direction;
-	}
-
-	function getCoordsObject(pos : Vector3, direction : String) : String
-	{
-		var newPos = nextPos(pos, direction);
-		var x = newPos.x;
-		var y = newPos.y;
-		return nextChar('A', x) + (1-y) + "_" + direction;
-	}
-
 	function isWalkable(pos : Vector3, direction : String) : boolean
 	{
 		// Check other characters
 
 		// Check obstacles
-		if (obstacles.ContainsKey(getCoords(pos)))
+		if (obstacles.ContainsKey(Grid.getCoords(pos)))
 			return false;
-		if (obstacles.ContainsKey(getCoordsObstacle(pos, direction)))
+		if (obstacles.ContainsKey(Grid.getCoordsDirectional(pos, direction)))
 			return false;
 
 		// Check collision mask
@@ -410,97 +340,68 @@ class MapBaseScript extends MonoBehaviour
 		}
 	}
 
-    function checkDoorEnteringEvent(pos : Vector3, direction : String) : DoorObject
+    function checkDoorEvent(event : Dictionary.<String, DoorObject>, pos : Vector3, direction : String) : DoorObject
     {
-        var newPos = nextPos(pos, direction);
-        var coords = getCoords(newPos);
-        if (doors.ContainsKey(coords))
-            return doors[coords];
+        var coords = Grid.getCoords(pos);
+        if (event.ContainsKey(coords))
+            return event[coords];
 
-        coords = getCoordsObject(pos, direction);
-        if (doors.ContainsKey(coords))
-            return doors[coords];
+        coords = Grid.getCoordsDirectional(pos, direction);
+        if (event.ContainsKey(coords))
+            return event[coords];
 
         return null;
+    }
+
+    function checkDoorEnteringEvent(pos : Vector3, direction : String) : DoorObject
+    {
+        var aheadPos = Grid.nextPos(pos, direction);
+        return checkDoorEvent(doors, aheadPos, direction);
     }
 
     function checkAtDoorEvent(pos : Vector3, direction : String) : DoorObject
     {
-        var coords = getCoords(pos);
-        if (doors.ContainsKey(coords))
-            return doors[coords];
-
-        coords = getCoordsObstacle(pos, direction);
-        if (doors.ContainsKey(coords))
-            return doors[coords];
-
-        return null;
+        return checkDoorEvent(doors, pos, direction);
     }
 
     function checkDoorLeftEvent(pos : Vector3, direction : String) : DoorObject
     {
-        var newPos = previousPos(pos, direction);
-        var coords = getCoords(newPos);
-        if (doors.ContainsKey(coords))
-            return doors[coords];
+        var previousPos = Grid.previousPos(pos, direction);
+        return checkDoorEvent(doors, previousPos, direction);
+    }
 
-        coords = getCoordsObject(pos, direction);
-        if (doors.ContainsKey(coords))
-            return doors[coords];
+    function checkGenericEvent(event : Dictionary.<String, String>, pos1 : Vector3, pos2 : Vector3, direction : String) : String
+    {
+        var coords = Grid.getCoords(pos1);
+        if (event.ContainsKey(coords))
+            return event[coords];
 
-        return null;
+        coords = Grid.getCoordsDirectional(pos2, direction);
+        if (event.ContainsKey(coords))
+            return event[coords];
+
+        return "";
     }
 
 	function checkPreEvent(pos : Vector3, direction : String) : String
 	{
-		var newPos = nextPos(pos, direction);
-		var coords = getCoords(newPos);
-		if (preevents.ContainsKey(coords))
-			return preevents[coords];
-
-		coords = getCoordsObject(pos, direction);
-		if (preevents.ContainsKey(coords))
-			return preevents[coords];
-
-		return "";
+        var aheadPos = Grid.nextPos(pos, direction);
+        return checkGenericEvent(preevents, aheadPos, aheadPos, direction);
 	}
 
 	function checkPostEvent(pos : Vector3, direction : String) : String
 	{
-		var coords = getCoords(pos);
-		if (postevents.ContainsKey(coords))
-			return postevents[coords];
-
-		coords = getCoordsObstacle(pos, direction);
-		if (postevents.ContainsKey(coords))
-			return postevents[coords];
-
-		return "";
+        return checkGenericEvent(postevents, pos, pos, direction);
 	}
 
 	function checkExit(pos : Vector3, direction : String) : String
 	{
-		var coords = getCoords(pos);
-		if (exits.ContainsKey(coords))
-			return exits[coords];
-
-		coords = getCoordsObstacle(pos, direction);
-		if (exits.ContainsKey(coords))
-			return exits[coords];
-
-		return "";
+        return checkGenericEvent(exits, pos, pos, direction);
 	}
 
 	function checkInteract(pos : Vector3, direction : String) : String
 	{
-		var coords = getCoords(pos);
-		if (objects.ContainsKey(coords))
-			return objects[coords];
-
-		coords = getCoordsObject(pos, direction);
-		if (objects.ContainsKey(coords))
-			return objects[coords];
-
-		return "";
+        var aheadPos = Grid.nextPos(pos, direction);
+        return checkGenericEvent(objects, pos, aheadPos, direction);
 	}
 }

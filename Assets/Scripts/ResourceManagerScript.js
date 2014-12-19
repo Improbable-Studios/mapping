@@ -2,28 +2,33 @@
 
 import System.IO;
 
-var directory : TextAsset;
+static var instance : ResourceManagerScript;
 
-var json : JSONClass;
+static var directory : TextAsset;
+static var json : JSONClass;
 
-private var save = [".png", ".ogg", ".wav", ".txt"];
+static private var save = [".png", ".ogg", ".wav", ".txt"];
 
 function Awake()
 {
+    instance = this;
 	if (Application.isEditor)
 		json = generateJSON();
 	else
+    {
+        directory = Resources.Load("directory") as TextAsset;
 		json = JSONNode.Parse(directory.text) as JSONClass;
+    }
 }
 
-function generateJSON()
+static function generateJSON()
 {
 	var J = new JSONClass();
 	recursiveDirectoryCrawl(J, Application.dataPath + "/Resources/");
 	return J;
 }
 
-function recursiveDirectoryCrawl(J : JSONNode, dir : String)
+static function recursiveDirectoryCrawl(J : JSONNode, dir : String)
 {
     for (f in Directory.GetFiles(dir))
     {
@@ -40,7 +45,7 @@ function recursiveDirectoryCrawl(J : JSONNode, dir : String)
     }
 }
 
-function getSubJSON(path : String)
+static function getSubJSON(path : String)
 {
 	var cur : JSONClass = json;
 	for (p in path.Split('/'[0]))
@@ -54,7 +59,7 @@ function getSubJSON(path : String)
 	return cur;
 }
 
-function getDirectoriesInPath(path : String)
+static function getDirectoriesInPath(path : String)
 {
 	var J = getSubJSON(path);
 	if (J == null)
@@ -65,7 +70,7 @@ function getDirectoriesInPath(path : String)
 	return res;
 }
 
-function getFilesOfType(path : String, extension : String)
+static function getFilesOfType(path : String, extension : String)
 {
 	var J = getSubJSON(path);
 	if (J == null)

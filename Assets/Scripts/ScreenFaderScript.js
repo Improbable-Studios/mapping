@@ -6,12 +6,12 @@ static private var deltaColor : Color;
 
 function Awake ()
 {
+    instance = this;
     // Set the texture so that it is the the size of the screen and covers it.
     targetColor = guiTexture.color;
     guiTexture.enabled = false;
 	guiTexture.color = new Color(targetColor.r, targetColor.g, targetColor.b, 0);
     guiTexture.pixelInset = new Rect(0f, 0f, Screen.width, Screen.height);
-    instance = this;
 }
 
 static function fadeIn(fadeDuration : float)

@@ -575,9 +575,9 @@ class AnimatedObject extends Object
 	
 	var speed = 1.0;
 	
-	function AnimatedObject(animationManagerScript : AnimationManagerScript, sr_ : SpriteRenderer, character : String, skinName : String)
+	function AnimatedObject(sr_ : SpriteRenderer, character : String, skinName : String)
 	{
-		manager = animationManagerScript;
+		manager = AnimationManagerScript.instance;
 		sr = sr_;
 		name = character;
 		if (!manager.animations.ContainsKey(name))
@@ -676,6 +676,8 @@ class AnimatedObject extends Object
 
 class AnimationManagerScript extends MonoBehaviour
 {
+    static var instance : AnimationManagerScript;
+
 	var pathToCharacters = "characters";
 	var preLoadAllCharacters = true;
 
@@ -685,11 +687,8 @@ class AnimationManagerScript extends MonoBehaviour
 
 	function Awake ()
 	{
-		resource = GetComponent(ResourceManagerScript);
-	}
-
-	function Start ()
-	{
+        instance = this;
+        resource = ResourceManagerScript.instance;
 	    for (dir in resource.getDirectoriesInPath(pathToCharacters))
 	    {
 	        animations[dir] = new Dictionary.<String, SpriteSkin>();
@@ -766,6 +765,6 @@ class AnimationManagerScript extends MonoBehaviour
 
 	function getAnimatedObject(sr : SpriteRenderer, character : String, skinName : String)
 	{
-		return new AnimatedObject(this, sr, character, skinName);
+		return new AnimatedObject(sr, character, skinName);
 	}
 }

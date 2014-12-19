@@ -8,7 +8,7 @@ class Map221Interior221BStairwell extends MapBaseScript
 	function Awake()
 	{
 		player = GameObject.Find("Player").GetComponent(MainPlayerScript);
-		character = GameObject.Find("Player").GetComponent(CharacterScript);
+		character = player.GetComponent(CharacterScript);
 		super.Awake();
 	}
 

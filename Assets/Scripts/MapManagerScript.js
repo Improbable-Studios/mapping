@@ -7,6 +7,8 @@ import SimpleJSON;
 
 class MapManagerScript extends MonoBehaviour
 {
+    static var instance : MapManagerScript;
+
 	var pathToMaps = "maps";
 	var preLoadAllMaps = true;
 	var rooms : GameObject;
@@ -21,7 +23,8 @@ class MapManagerScript extends MonoBehaviour
 
 	function Awake ()
 	{
-		resource = GetComponent(ResourceManagerScript);
+        instance = this;
+		resource = ResourceManagerScript.instance;
 	    for (dir in resource.getDirectoriesInPath(pathToMaps))
 	    {
 	    	locations[dir] = new Dictionary.<String, GameObject>();
@@ -32,7 +35,6 @@ class MapManagerScript extends MonoBehaviour
 
 	function Start ()
 	{
-        loadLocation(currentLocation);
 	}
 
 	function recursiveInitRooms(loc : String, currentPath : String)

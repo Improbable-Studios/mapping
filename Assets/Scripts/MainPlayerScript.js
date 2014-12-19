@@ -9,8 +9,8 @@ class MainPlayerScript extends MonoBehaviour
 	private var isKeyUpAfterWalking = true;
 	private var finishedCheckingExits = true;
 
-	private var isChangingLocation = false;
-	private var currentLocation : GameObject;
+	private var isChangingRoom = false;
+	private var currentRoom : GameObject;
 
 	private var cam : CameraScript;
 	private var map : MapBaseScript;
@@ -22,24 +22,31 @@ class MainPlayerScript extends MonoBehaviour
 	
 	function Awake()
 	{
-		cam = GameObject.Find("Main Camera").GetComponent(CameraScript);
+		cam = Camera.main.GetComponent(CameraScript);
+        setCameraZoom(2.0);
 		character = GetComponent(CharacterScript);
-		mapManager = GameObject.Find("Manager").GetComponent(MapManagerScript);
 		sr = GetComponent(SpriteRenderer);
 		sr.enabled = false;
 		canvas = GameObject.Find("Canvas").GetComponent(CanvasGroup);
-		setCameraZoom(2.0);
 	}
 
 	function Start ()
 	{
+        var location = "221";
+        var room = "Interior/221B/Stairwell";
+        var coords = "F2";
+
 		canvas.alpha = 0f;
 		canvas.interactable = false;
-		currentLocation = mapManager.getRoomObject();
-		map = currentLocation.GetComponent(MapBaseScript);
-		yield ScreenFaderScript.fadeOut(0.0f, Color.black);
-		yield WaitForSeconds(0.5);
-		yield changeLocation("Interior/221B/Stairwell", "F2");
+        yield ScreenFaderScript.fadeOut(0.0f, Color.black);
+
+        mapManager = MapManagerScript.instance;
+        mapManager.loadLocation(location);
+		currentRoom = mapManager.getRoomObject(room);
+		map = currentRoom.GetComponent(MapBaseScript);
+		yield changeRoom(room, coords);
+        yield WaitForSeconds(0.5);
+
 		sr.enabled = true;
 		character.move("South", 4, true);
 		ScreenFaderScript.fadeIn(1f, Color.black);
@@ -60,7 +67,7 @@ class MainPlayerScript extends MonoBehaviour
 			isKeyUpAfterWalking = true;
 
 		// Check for active inputs
-		if (!character.moving() && !isChangingLocation && !disableInputs && finishedCheckingExits)
+		if (!character.moving() && !isChangingRoom && !disableInputs && finishedCheckingExits)
 			checkInput();
 	}
 
@@ -141,67 +148,58 @@ class MainPlayerScript extends MonoBehaviour
 			if (success == true)
 			{
 				var subtokens = tokens[2].Split('_'[0]);
-				yield changeLocation(tokens[1], subtokens[0]);
+				yield changeRoom(tokens[1], subtokens[0]);
 				if (subtokens.Length == 2)
 					yield character.move(subtokens[1], true);
 			}
 		}
 	}
 
-	function fadeOutLocation(location : GameObject)
+	function fadeOutRoom(location : GameObject)
 	{
 		sr.enabled = false;
-		location.SetActive(false);
 		yield;
 	}
 
-	function fadeInLocation(location : GameObject)
+	function fadeInRoom(location : GameObject)
 	{
-		location.SetActive(true);
 		sr.enabled = true;
 		yield;
 	}
 
-	function changeLocation(location : String, coords : String)
+	function changeRoom(location : String, coords : String)
 	{
-		isChangingLocation = true;
+		isChangingRoom = true;
 		if (mapManager.isRoomExist(location))
 		{
-			if (mapManager.getRoomObject(location) != currentLocation)
+			if (mapManager.getRoomObject(location) != currentRoom)
 			{
-				yield fadeOutLocation(currentLocation);
+				yield fadeOutRoom(currentRoom);
+                currentRoom.SetActive(false);
 				mapManager.currentRoom = location;
-				currentLocation = mapManager.getRoomObject();
+				currentRoom = mapManager.getRoomObject();
 			}
 
-			var x : int = coords[0];
-			var a : int = 'A'[0];
-			x -= a;
-			var y : int = int.Parse(coords[1:]);
-			var newPos = transform.position;
-			newPos.x = x;
-			newPos.y = -y + 1;
-			transform.position = newPos;
-			character.updateCamera();
 			if (location.StartsWith("Exterior"))
 				setCameraZoom(1.0);
 			else
 				setCameraZoom(2.0);
 
-			if (!currentLocation.activeInHierarchy)
+			if (!currentRoom.activeInHierarchy)
 			{
-				yield fadeInLocation(currentLocation);
-				map = currentLocation.GetComponent(MapBaseScript);
-				yield character.updateMap();
+                currentRoom.SetActive(true);
+				map = currentRoom.GetComponent(MapBaseScript) as MapBaseScript;
+				character.changeRoom(map, coords);
+                yield fadeInRoom(currentRoom);
 			}
 			else
 				yield;
 		}
 		else
 		{
-			Debug.Log("Location don't exist: " + location);
+			Debug.Log("Room don't exist: " + location);
 			yield;
 		}
-		isChangingLocation = false;
+		isChangingRoom = false;
 	}
 }
