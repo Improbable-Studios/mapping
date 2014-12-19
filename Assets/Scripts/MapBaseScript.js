@@ -259,13 +259,16 @@ class MapBaseScript extends MonoBehaviour
 						exits[coords] = name + ' ' + dest;
 					}
 				}
-                else if (type == "Person")
+                else if (type.StartsWith("Person"))
                 {
-                    tokens = val.Split(' '[0]);
-                    if (tokens.Length < 3)
-                        Debug.LogWarning(path + " Person has incorrect config: " + line);
-                    people[tokens[0]] = name + " " + tokens[1];
-                    peopleAnim[name] = String.Join(" ", tokens[2:]);
+                    if (type == "Person" || type.EndsWith(currentTime))
+                    {
+                        tokens = val.Split(' '[0]);
+                        if (tokens.Length < 3)
+                            Debug.LogWarning(path + " Person has incorrect config: " + line);
+                        people[tokens[0]] = name + " " + tokens[1];
+                        peopleAnim[name] = String.Join(" ", tokens[2:]);
+                    }
                 }
 				else
 				{
