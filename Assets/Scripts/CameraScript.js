@@ -52,6 +52,8 @@ function initialise()
     var pivot = Vector2(0.5f, 0.5f);
     sr.sprite = Sprite.Create(texture, rect, pivot, 32);
     sr.sprite.name = sr.name + "_sprite";
+    if (followedObject)
+        lookAt(followedObject);
 }
 
 function setOverlayBlending(flag : boolean)
