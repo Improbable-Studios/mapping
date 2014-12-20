@@ -12,8 +12,15 @@ class DoorObject extends Object
     var state : String; // "Opened" or "Closed"
 
     var speed = 5.0;
+    var defaultSFXPrefix = "audio/SFX/Entrances/";
+    var openClip :AudioClip;
+    var closeClip :AudioClip;
+    var sfxScript :AudioScript;
+    var sfxObject : GameObject;
+    var openSFXFromStart : boolean;
+    var closeSFXFromStart : boolean;
     
-    function DoorObject(map_ : MapBaseScript, gameObject_ : GameObject, sr_ : SpriteRenderer, anim_ : AnimationItem, coords : String)
+    function DoorObject(map_ : MapBaseScript, gameObject_ : GameObject, sr_ : SpriteRenderer, anim_ : AnimationItem, coords : String, sfx : String[])
     {
         map = map_;
         gameObject = gameObject_;
@@ -25,6 +32,32 @@ class DoorObject extends Object
         
         gameObject.transform.position = Grid.getPos(coords);
         sr.sprite = anim.sprites[0, 0];
+        
+        if (sfx && sfx.Length == 2)
+        {
+            var tokens = sfx[0].Split('_'[0]);
+            var openPath = tokens[0];
+            openSFXFromStart = true;
+            if (tokens.Length == 2)
+                openSFXFromStart = tokens[1] == "Begin";
+            if (!openPath.Contains('/'))
+                openPath = defaultSFXPrefix + openPath;
+            openClip = Resources.Load(openPath) as AudioClip;
+
+            tokens = sfx[1].Split('_'[0]);
+            var closePath = tokens[0];
+            closeSFXFromStart = false;
+            if (tokens.Length == 2)
+                closeSFXFromStart = tokens[1] == "Begin";
+            if (!closePath.Contains('/'))
+                closePath = defaultSFXPrefix + closePath;
+            closeClip = Resources.Load(closePath) as AudioClip;
+            
+            sfxObject = gameObject.Instantiate(MapManagerScript.sfxPrefab);
+            sfxObject.transform.parent = MapManagerScript.audioObject.transform;
+            sfxObject.name = gameObject.name + "_SFX";
+            sfxScript = sfxObject.GetComponent(AudioScript);
+        }
     }
 
     function setLayerOrder(state : String)
@@ -32,16 +65,16 @@ class DoorObject extends Object
         if (state == "Closed")
         {
             if (anim.type == AnimType.FrontFrontDoor || anim.type == AnimType.FrontBackDoor)
-                sr.sortingOrder = 100;
+                sr.sortingOrder = 100 + anim.layer;
             else
-                sr.sortingOrder = -100;
+                sr.sortingOrder = -100 + anim.layer;
         }
         else
         {
             if (anim.type == AnimType.FrontFrontDoor || anim.type == AnimType.BackFrontDoor)
-                sr.sortingOrder = 100;
+                sr.sortingOrder = 100 + anim.layer;
             else
-                sr.sortingOrder = -100;
+                sr.sortingOrder = -100 + anim.layer;
         }
     }
 
@@ -66,7 +99,13 @@ class DoorObject extends Object
             closeDoorInstant();
         }
         if (speedModifier > 0f && state == "Closed")
+        {
+            if (sfxScript && openClip && openSFXFromStart)
+                sfxScript.StartCoroutine(sfxScript.changeClip(openClip, 1f, true, true));
             yield map.StartCoroutine(anim.run(sr, speed * speedModifier, ["Start"]));
+            if (sfxScript && openClip && !openSFXFromStart && state == "Closed")
+                sfxScript.StartCoroutine(sfxScript.changeClip(openClip, 1f, true, true));
+            }
         setLayerOrder("Opened");
         state = "Opened";
         yield;
@@ -96,7 +135,13 @@ class DoorObject extends Object
         }
         setLayerOrder("Closed");
         if (speedModifier > 0f && state == "Opened")
+        {
+            if (sfxScript && closeClip && closeSFXFromStart)
+                sfxScript.StartCoroutine(sfxScript.changeClip(closeClip, 1f, true, true));
             yield map.StartCoroutine(anim.run(sr, speed * speedModifier, ["Stop"]));
+            if (sfxScript && closeClip && !closeSFXFromStart && state == "Opened")
+                sfxScript.StartCoroutine(sfxScript.changeClip(closeClip, 1f, true, true));
+        }
         state = "Closed";
         map.currentDoor = null;
         yield;
@@ -131,8 +176,6 @@ class MapBaseScript extends MonoBehaviour
 	private var afternoon : SpriteRenderer;
 	private var evening : SpriteRenderer;
 	private var activeOverlay : SpriteRenderer;
-	private var shaderOutput : GameObject;
-    private var doorPrefab : GameObject;
 
     private var resource : ResourceManagerScript;
     private var manager : MapManagerScript;
@@ -151,12 +194,11 @@ class MapBaseScript extends MonoBehaviour
 
 	function OnEnable()
 	{
-		if (shaderOutput == null)
+		if (bgmscript == null)
 			return;
-		if (activeOverlay)
-			shaderOutput.SetActive(true);
-		else
-			shaderOutput.SetActive(false);
+        CameraScript.instance.setOverlayBlending(activeOverlay != null);
+        if (collisionMask)
+            CameraScript.instance.setRoomSize(collisionMask.width, collisionMask.height);
 		if (currentDoor && currentDoor.map)
 			currentDoor.closeDoorInstant();
         for (var k in people.Keys)
@@ -179,8 +221,6 @@ class MapBaseScript extends MonoBehaviour
 		ambience1script = GameObject.Find("Ambience 1").GetComponent(AudioScript);
 		ambience2player = GameObject.Find("Ambience 2").GetComponent(AudioSource);
 		ambience2script = GameObject.Find("Ambience 2").GetComponent(AudioScript);
-		shaderOutput = gameObject.Find("Shader Output");
-        doorPrefab = Resources.Load("DoorPrefab") as GameObject;
 		morning = gameObject.Find("Ambience-Morning").GetComponent(SpriteRenderer) as SpriteRenderer;
 		afternoon = gameObject.Find("Ambience-Afternoon").GetComponent(SpriteRenderer) as SpriteRenderer;
 		evening = gameObject.Find("Ambience-Evening").GetComponent(SpriteRenderer) as SpriteRenderer;
@@ -296,17 +336,21 @@ class MapBaseScript extends MonoBehaviour
             ss.loadTexture();
             for (var k in ss.anims.Keys)
             {
-                var d = gameObject.Instantiate(doorPrefab);
+                var d = gameObject.Instantiate(manager.doorPrefab);
                 d.transform.parent = transform;
                 d.name = "Door " + k;
                 var sr : SpriteRenderer = d.GetComponent(SpriteRenderer) as SpriteRenderer;
-                tokens = k.Split('_'[0]);
-                var doorObject = DoorObject(this, d, sr, ss.anims[k], tokens[0]);
-                for (var i=0; i<tokens.Length; i++)
+                tokens = k.Split('-'[0]);
+                var subtokens = tokens[0].Trim().Split('_'[0]);
+                var sfx : String[] = null;
+                if (tokens.Length > 1)
+                    sfx = tokens[1].Trim().Split();
+                var doorObject = DoorObject(this, d, sr, ss.anims[k], subtokens[0], sfx);
+                for (var i=0; i<subtokens.Length; i++)
                 {
-                    if (i==0 && tokens.Length > 1)
+                    if (i==0 && subtokens.Length > 1)
                         continue;
-                    doors[tokens[i]] = doorObject;
+                    doors[subtokens[i]] = doorObject;
                 }
             }
 	    }

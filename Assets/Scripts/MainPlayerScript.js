@@ -40,6 +40,8 @@ class MainPlayerScript extends MonoBehaviour
 		quitMenu.interactable = false;
         yield ScreenFaderScript.fadeOut(0.0f, Color.black);
 
+        cam.setFollow(gameObject, FollowMode.Smart);
+
         mapManager = MapManagerScript.instance;
         mapManager.loadLocation(location);
 		currentRoom = mapManager.getRoomObject(room);

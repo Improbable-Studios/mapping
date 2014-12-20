@@ -72,8 +72,7 @@ class CharacterScript extends MonoBehaviour
 
 	function updateCamera()
 	{
-		if (transform == cameraScript.follow.transform)
-			cameraScript.lookAt(gameObject);
+		cameraScript.lookAt(gameObject);
 	}
 
     function warpTo(coords : String)

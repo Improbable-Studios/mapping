@@ -8,13 +8,17 @@ import SimpleJSON;
 class MapManagerScript extends MonoBehaviour
 {
     static var instance : MapManagerScript;
-
+    static var roomsObject : GameObject;
+    static var charactersObject : GameObject;
+    static var audioObject : GameObject;
+    static var shaderOutput : GameObject;
+    static var roomPrefab : GameObject;
+    static var characterPrefab : GameObject;
+    static var doorPrefab : GameObject;
+    static var sfxPrefab : GameObject;
+    
 	var pathToMaps = "maps";
 	var preLoadAllMaps = true;
-    var roomsObject : GameObject;
-    var charactersObject : GameObject;
-    var roomPrefab : GameObject;
-    var characterPrefab : GameObject;
 
     var locations = Dictionary.<String, Dictionary.<String, GameObject> >();
     var characters = Dictionary.<String, GameObject>();
@@ -34,6 +38,14 @@ class MapManagerScript extends MonoBehaviour
 	    	recursiveInitRooms(dir, "");
 //	    	Debug.Log("LOCATION: " + dir + " " + locations[dir].Count + " rooms");
 	    }
+        roomsObject = GameObject.Find("Rooms");
+        charactersObject = GameObject.Find("Characters");
+        audioObject = GameObject.Find("Audio");
+        shaderOutput = GameObject.Find("Shader Output");
+        characterPrefab = Resources.Load("CharacterPrefab") as GameObject;
+        roomPrefab = Resources.Load("RoomPreFab") as GameObject;
+        doorPrefab = Resources.Load("DoorPrefab") as GameObject;
+        sfxPrefab = Resources.Load("SFXPrefab") as GameObject;
     }
 
 	function Start ()

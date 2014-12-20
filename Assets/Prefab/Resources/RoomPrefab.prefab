@@ -192,14 +192,49 @@ MonoBehaviour:
   ambience1Volume: 1
   ambience2: {fileID: 0}
   ambience2Volume: 1
-  doorPrefab: {fileID: 0}
+  currentDoor:
+    map: {fileID: 0}
+    gameObject: {fileID: 0}
+    sr: {fileID: 0}
+    anim:
+      framesPerSecond: 0
+      isRunning: 0
+      breakRepeat: 0
+      breakRepeatAfterFinish: 0
+      name: 
+      type: 0
+      spriteSize: {x: 0, y: 0}
+      row: 0
+      layer: 0
+      progressive: 
+      stepping: 
+      repeating: 
+      south: 0
+      west: 0
+      north: 0
+      east: 0
+      alternateMove: 0
+      move1: 
+      move2: 
+      rowU: 0
+      rowF: 0
+      rowD: 0
+    type: 0
+    state: 
+    speed: 0
+    defaultSFXPrefix: 
+    openClip: {fileID: 0}
+    closeClip: {fileID: 0}
+    sfxScript: {fileID: 0}
+    sfxObject: {fileID: 0}
+    openSFXFromStart: 0
+    closeSFXFromStart: 0
   bgmplayer: {fileID: 0}
   bgmscript: {fileID: 0}
   ambience1player: {fileID: 0}
   ambience1script: {fileID: 0}
   ambience2player: {fileID: 0}
   ambience2script: {fileID: 0}
-  animManager: {fileID: 0}
 --- !u!212 &21200000
 SpriteRenderer:
   m_ObjectHideFlags: 1
@@ -212,7 +247,7 @@ SpriteRenderer:
   m_LightmapIndex: 255
   m_LightmapTilingOffset: {x: 1, y: 1, z: 0, w: 0}
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 2100000, guid: 84ea47f59517f4ac1815f552cc8d60bc, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 0
@@ -234,7 +269,7 @@ SpriteRenderer:
   m_LightmapIndex: 255
   m_LightmapTilingOffset: {x: 1, y: 1, z: 0, w: 0}
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 2100000, guid: 84ea47f59517f4ac1815f552cc8d60bc, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 0
@@ -256,7 +291,7 @@ SpriteRenderer:
   m_LightmapIndex: 255
   m_LightmapTilingOffset: {x: 1, y: 1, z: 0, w: 0}
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 2100000, guid: 84ea47f59517f4ac1815f552cc8d60bc, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 0
@@ -278,7 +313,7 @@ SpriteRenderer:
   m_LightmapIndex: 255
   m_LightmapTilingOffset: {x: 1, y: 1, z: 0, w: 0}
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 2100000, guid: 84ea47f59517f4ac1815f552cc8d60bc, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 0
@@ -300,7 +335,7 @@ SpriteRenderer:
   m_LightmapIndex: 255
   m_LightmapTilingOffset: {x: 1, y: 1, z: 0, w: 0}
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 2100000, guid: 84ea47f59517f4ac1815f552cc8d60bc, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 0

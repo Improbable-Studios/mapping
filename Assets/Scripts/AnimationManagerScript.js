@@ -25,6 +25,9 @@ class AnimationItem extends Object
 	var sprites : Sprite[,];
 	var row : int;
 
+    // Doors
+    var layer : int;
+
 	// Forward & Directional
 	var types : Array;
 	var progressive : int[];
@@ -53,6 +56,7 @@ class AnimationItem extends Object
 		spriteSize = spriteSize_;
 		sprites = sprites_;
 		row = row_;
+        layer = 0;
 
 		if (row+1 > sprites.GetLength(0))
 		{
@@ -86,13 +90,13 @@ class AnimationItem extends Object
 			type = AnimType.Moving;
 		else if (type_ == "Idle")
 			type = AnimType.Idle;
-        else if (type_ == "Front" ||type_ == "FrontFront")
+        else if (type_ == "Front" || type_.StartsWith("Front+") ||type_.StartsWith("FrontFront"))
             type = AnimType.FrontFrontDoor;
-        else if (type_ == "FrontBack")
+        else if (type_.StartsWith("FrontBack"))
             type = AnimType.FrontBackDoor;
-        else if (type_ == "BackFront")
+        else if (type_.StartsWith("BackFront"))
             type = AnimType.BackFrontDoor;
-        else if (type_ == "Back"  || type_ == "BackBack")
+        else if (type_ == "Back" ||  type_.StartsWith("Back+") || type_.StartsWith("BackBack"))
             type = AnimType.BackBackDoor;
 		else
 		{
@@ -217,6 +221,11 @@ class AnimationItem extends Object
 
         if (type == AnimType.FrontFrontDoor || type == AnimType.FrontBackDoor || type == AnimType.BackFrontDoor || type == AnimType.BackBackDoor)
         {
+            for (var c in type_)
+            {
+                if (c == '+'[0])
+                    layer++;
+            }
             indexArray = new int[sprites.GetLength(1)];
             for (i=0; i < sprites.GetLength(1); i++)
                 indexArray[i] = i;
@@ -455,7 +464,7 @@ class SpriteSkin extends Object
 	    for (var i=0; i<pnglist.Length; i++)
 	    {
 			var tokens = pnglist[i].Split('-'[0]);
-			if (tokens.Length != 2)
+			if (tokens.Length != 2 && tokens.Length != 3)
 			{
 				Debug.Log("WARNING: Incorrect number of '-' in animation name: " + path + pnglist[i]);
 				continue;
@@ -517,7 +526,10 @@ class SpriteSkin extends Object
 					isError = true;
 					break;
 				}
-				anims[anim.name] = anim;
+                var name = anim.name;
+                if (tokens.Length == 3)
+                    name += " - " + tokens[2];
+				anims[name] = anim;
 				tempArray.Add(anim.name);
 			}
 			if (isError)

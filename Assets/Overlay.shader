@@ -21,6 +21,7 @@
 		Cull Off
         Lighting Off
   		ZWrite Off
+        ZTest Always
 		Fog { Mode Off }
         Blend SrcAlpha OneMinusSrcAlpha
        
@@ -30,43 +31,57 @@
             #pragma vertex vert
             #pragma fragment frag
             #pragma fragmentoption ARB_precision_hint_fastest
-           
             #include "UnityCG.cginc"
-           
-            struct appdata_custom
-            {
-                float4 vertex : POSITION;
-                fixed2 uv : TEXCOORD0;
-                float4 color : COLOR;
-            };
-           
-            struct v2f
-            {
-                float4 vertex : POSITION;
-                fixed2 uv : TEXCOORD0;
-                float4 color : COLOR;
-            };
-           
+
             sampler2D _MainTex;
             fixed4 _MainTex_ST;
             sampler2D _OverlayTex;
             fixed4 _OverlayTex_ST;
             sampler2D _BackgroundTex;
             fixed4 _BackgroundTex_ST;
-           
-            v2f vert (appdata_custom v)
+
+            struct appdata_t
             {
-                v2f o;
-                o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv,_BackgroundTex);
-                o.color = v.color;
-                return o;
-            }          
+                float4 vertex   : POSITION;
+                float2 texcoord : TEXCOORD0;
+            };
+
+            struct v2f
+            {
+                float4 vertex        : POSITION;
+                float2 texcoord      : TEXCOORD0;
+            };
+
+            v2f vert(appdata_t IN)
+            {
+                v2f OUT;
+                OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
+                OUT.texcoord = TRANSFORM_TEX(IN.texcoord, _MainTex);
+
+                // Snapping params
+                float hpcX = _ScreenParams.x * 0.5;
+                float hpcY = _ScreenParams.y * 0.5;
+            #ifdef UNITY_HALF_TEXEL_OFFSET
+                float hpcOX = -0.5;
+                float hpcOY = 0.5;
+            #else
+                float hpcOX = 0;
+                float hpcOY = 0;
+            #endif  
+                // Snap
+                float pos = floor((OUT.vertex.x / OUT.vertex.w) * hpcX + 0.5f) + hpcOX;
+                OUT.vertex.x = pos / hpcX * OUT.vertex.w;
+
+                pos = floor((OUT.vertex.y / OUT.vertex.w) * hpcY + 0.5f) + hpcOY;
+                OUT.vertex.y = pos / hpcY * OUT.vertex.w;
+
+                return OUT;
+            }
            
             fixed4 frag (v2f i) : COLOR
             {
-                fixed4 diffuse = tex2D(_OverlayTex, i.uv);
-                fixed4 text = tex2D(_BackgroundTex, i.uv);
+                fixed4 diffuse = tex2D(_OverlayTex, i.texcoord);
+                fixed4 text = tex2D(_BackgroundTex, i.texcoord);
                 fixed luminance =  dot(diffuse, fixed4(0.2126, 0.7152, 0.0722, 0));
                 fixed oldAlpha = diffuse.a;
 

@@ -746,10 +746,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathToMaps: maps
   preLoadAllMaps: 1
-  roomsObject: {fileID: 1729875614}
-  charactersObject: {fileID: 1652685009}
-  roomPrefab: {fileID: 100004, guid: 2d86f68751c4a435188020e62dc7d741, type: 2}
-  characterPrefab: {fileID: 100000, guid: 322a4046b3ab6462cb171b18c6b3983a, type: 2}
   currentLocation: 
   currentRoom: 
 --- !u!1 &983241284
@@ -833,7 +829,7 @@ SpriteRenderer:
   m_LightmapIndex: 255
   m_LightmapTilingOffset: {x: 1, y: 1, z: 0, w: 0}
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 2100000, guid: 84ea47f59517f4ac1815f552cc8d60bc, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 0
@@ -1205,8 +1201,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29d9f18417b764e3b8e263b8fd9433bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  follow: {fileID: 2135468064}
-  finalTexture: {fileID: 983241284}
 --- !u!1 &1465332521
 GameObject:
   m_ObjectHideFlags: 0
@@ -1732,7 +1726,7 @@ SpriteRenderer:
   m_LightmapIndex: 255
   m_LightmapTilingOffset: {x: 1, y: 1, z: 0, w: 0}
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 2100000, guid: 84ea47f59517f4ac1815f552cc8d60bc, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_UseLightProbes: 0

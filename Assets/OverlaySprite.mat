@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: CustomSprite
+  m_Name: OverlaySprite
   m_Shader: {fileID: 4800000, guid: 32fe78b2f74ac41d2b042b646cc3d873, type: 3}
   m_ShaderKeywords: []
   m_CustomRenderQueue: -1

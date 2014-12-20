@@ -70,14 +70,14 @@ function doFadeToVolume(vol : float, speed : float)
 	yield;
 }
 
-function changeClip(clip : AudioClip, vol : float, skipFade : boolean)
+function changeClip(clip : AudioClip, vol : float, skipFade : boolean, interrupt : boolean)
 {
 	while (!sound)
 		yield;
 		
 	StopAllCoroutines();
 		
-	if (sound.audio.clip != clip)
+	if (interrupt || sound.audio.clip != clip)
 	{
 		volume = vol;
 		if (!skipFade && fadeOut)
@@ -104,9 +104,14 @@ function changeClip(clip : AudioClip, vol : float, skipFade : boolean)
 	}
 }
 
+function changeClip(clip : AudioClip, vol : float, skipFade : boolean)
+{
+    return changeClip(clip, vol, skipFade, false);
+}
+
 function changeClip(clip : AudioClip, vol : float)
 {
-	return changeClip(clip, vol, false);
+	return changeClip(clip, vol, false, false);
 }
 
 function isPlaying()
