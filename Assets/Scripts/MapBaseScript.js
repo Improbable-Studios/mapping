@@ -80,6 +80,7 @@ class DoorObject extends Object
 
    function openDoorInstant()
     {
+        map.lastDoorOpened = this;
         setLayerOrder("Opened");
         sr.sprite = anim.sprites[0, anim.sprites.GetLength(1)-1];
         state = "Opened";
@@ -102,10 +103,11 @@ class DoorObject extends Object
         {
             if (sfxScript && openClip && openSFXFromStart)
                 sfxScript.StartCoroutine(sfxScript.changeClip(openClip, 1f, true, true));
+            map.lastDoorOpened = this;
             yield map.StartCoroutine(anim.run(sr, speed * speedModifier, ["Start"]));
             if (sfxScript && openClip && !openSFXFromStart && state == "Closed")
                 sfxScript.StartCoroutine(sfxScript.changeClip(openClip, 1f, true, true));
-            }
+        }
         setLayerOrder("Opened");
         state = "Opened";
         yield;
@@ -116,7 +118,7 @@ class DoorObject extends Object
         setLayerOrder("Closed");
         sr.sprite = anim.sprites[0, 0];
         state = "Closed";
-        map.currentDoor = null;
+        map.lastDoorClosed = this;
     }
 
     function closeDoor()
@@ -126,7 +128,6 @@ class DoorObject extends Object
     
     function closeDoor(speedModifier : float)
     {
-    	map.currentDoor = this;
         if (anim && anim.isRunning)
         {
             map.StopCoroutine("anim.run");
@@ -138,12 +139,12 @@ class DoorObject extends Object
         {
             if (sfxScript && closeClip && closeSFXFromStart)
                 sfxScript.StartCoroutine(sfxScript.changeClip(closeClip, 1f, true, true));
+            map.lastDoorClosed = this;
             yield map.StartCoroutine(anim.run(sr, speed * speedModifier, ["Stop"]));
             if (sfxScript && closeClip && !closeSFXFromStart && state == "Opened")
                 sfxScript.StartCoroutine(sfxScript.changeClip(closeClip, 1f, true, true));
         }
         state = "Closed";
-        map.currentDoor = null;
         yield;
     }
 }
@@ -180,7 +181,8 @@ class MapBaseScript extends MonoBehaviour
     private var resource : ResourceManagerScript;
     private var manager : MapManagerScript;
 
-	var currentDoor : DoorObject;
+    var lastDoorOpened : DoorObject;
+    var lastDoorClosed : DoorObject;
 	var bgmplayer : AudioSource;
 	var bgmscript : AudioScript;
 	var ambience1player : AudioSource;
@@ -199,8 +201,11 @@ class MapBaseScript extends MonoBehaviour
         CameraScript.instance.setOverlayBlending(activeOverlay != null);
         if (collisionMask)
             CameraScript.instance.setRoomSize(collisionMask.width, collisionMask.height);
-		if (currentDoor && currentDoor.map)
-			currentDoor.closeDoorInstant();
+		if (lastDoorOpened && lastDoorOpened.gameObject)
+        {
+			lastDoorOpened.closeDoorInstant();
+            lastDoorOpened = null;
+        }
         for (var k in people.Keys)
         {
             var nameAndSkin = people[k].Split();
