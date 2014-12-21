@@ -162,7 +162,7 @@ class MapBaseScript extends MonoBehaviour
 	var ambience2 : AudioClip;
 	var ambience2Volume = 1f;
 
-	private var currentTime = "Evening"; // HACK: Need to move to a global state manager
+	private var currentTime = "Morning"; // HACK: Need to move to a global state manager
 
 	private var path : String;
 
