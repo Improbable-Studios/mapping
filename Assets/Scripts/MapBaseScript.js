@@ -11,7 +11,7 @@ class DoorObject extends Object
     var type : AnimType;
     var state : String; // "Opened" or "Closed"
 
-    var speed = 5.0;
+    var speed = 3.0;
     var defaultSFXPrefix = "audio/SFX/Entrances/";
     var openClip :AudioClip;
     var closeClip :AudioClip;
@@ -58,6 +58,8 @@ class DoorObject extends Object
             sfxObject.name = gameObject.name + "_SFX";
             sfxScript = sfxObject.GetComponent(AudioScript);
         }
+        else if (sfx && sfx.Length != 0)
+            Debug.LogWarning("Door SFX not set correctly: " + gameObject.name + " in " + map.getPath());
     }
 
     function setLayerOrder(state : String)
@@ -244,7 +246,7 @@ class MapBaseScript extends MonoBehaviour
 
 		if (!text)
 		{
-			Debug.Log("WARNNG, no text file found in room: " + name);
+			Debug.LogWarning("No text file found in room: " + name);
 			return;
 		}
 		var resourcePrefix = "audio/";
@@ -350,8 +352,20 @@ class MapBaseScript extends MonoBehaviour
                 var sfx : String[] = null;
                 if (tokens.Length > 1)
                     sfx = tokens[1].Trim().Split();
-                var doorObject = DoorObject(this, d, sr, ss.anims[k], subtokens[0], sfx);
+                var badCoords = false;
                 for (var i=0; i<subtokens.Length; i++)
+                {
+                    if (!Grid.isValidCoords(subtokens[i]))
+                    {
+                        Debug.LogWarning("Bad coordinates in door " + path + " -- " + k);
+                        badCoords = true;
+                        break;
+                    }
+                }
+                if (badCoords)
+                    continue;
+                var doorObject = DoorObject(this, d, sr, ss.anims[k], subtokens[0], sfx);
+                for (i=0; i<subtokens.Length; i++)
                 {
                     if (i==0 && subtokens.Length > 1)
                         continue;
@@ -360,6 +374,11 @@ class MapBaseScript extends MonoBehaviour
             }
 	    }
 	}
+
+function getPath()
+{
+    return path;
+}
 
 	function playBGM()
 	{

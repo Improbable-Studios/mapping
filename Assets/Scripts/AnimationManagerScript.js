@@ -61,7 +61,7 @@ class AnimationItem extends Object
 		if (row+1 > sprites.GetLength(0))
 		{
 			type = AnimType.ERROR;
-			Debug.Log("WARNING: Animation row size incorrect -- " + name_);
+			Debug.LogWarning("Animation row size incorrect -- " + name_);
 			return;
 		}
 
@@ -101,7 +101,7 @@ class AnimationItem extends Object
 		else
 		{
 			type = AnimType.ERROR;
-			Debug.Log("WARNING: This animation type is not known - " + name);
+			Debug.LogWarning("This animation type is not known - " + name);
 			return;
 		}
 
@@ -126,20 +126,20 @@ class AnimationItem extends Object
 				else
 				{
 					type = AnimType.ERROR;
-					Debug.Log("WARNING: Can't parse Forward/Idle animation info -- " + name_);
+					Debug.LogWarning("Can't parse Forward/Idle animation info -- " + name_);
 					return;
 				}
 			}
 			if (type == AnimType.Forward && sprites.GetLength(1) != currentIndex)
 			{
 				type = AnimType.ERROR;
-				Debug.Log("WARNING: Forward animation incorrect number of columns -- " + name_);
+				Debug.LogWarning("Forward animation incorrect number of columns -- " + name_);
 				return;
 			}
 			if (type == AnimType.Directional && sprites.GetLength(1) != currentIndex * 4)
 			{
 				type = AnimType.ERROR;
-				Debug.Log("WARNING: Directional animation incorrect number of columns -- " + name_);
+				Debug.LogWarning("Directional animation incorrect number of columns -- " + name_);
 				return;
 			}
 
@@ -160,7 +160,7 @@ class AnimationItem extends Object
 			if (sprites.GetLength(1) != 12)
 			{
 				type = AnimType.ERROR;
-				Debug.Log("WARNING: Idle animation incorrect number of columns -- " + name_);
+				Debug.LogWarning("Idle animation incorrect number of columns -- " + name_);
 				return;
 			}
 			tokens = name.Split('_'[0]);
@@ -170,7 +170,7 @@ class AnimationItem extends Object
 			if (rowsize * (row+1) > sprites.GetLength(0))
 			{
 				type = AnimType.ERROR;
-				Debug.Log("WARNING: Idle animation row size incorrect -- " + name_);
+				Debug.LogWarning("Idle animation row size incorrect -- " + name_);
 				return;
 			}
 			currentIndex = 0;
@@ -191,7 +191,7 @@ class AnimationItem extends Object
 				else
 				{
 					type = AnimType.ERROR;
-					Debug.Log("WARNING: Can't parse Idle animation info -- " + name_);
+					Debug.LogWarning("Can't parse Idle animation info -- " + name_);
 					return;
 				}
 				currentIndex++;
@@ -203,7 +203,7 @@ class AnimationItem extends Object
 			if (sprites.GetLength(1) != 12)
 			{
 				type = AnimType.ERROR;
-				Debug.Log("WARNING: Moving animation incorrect number of columns -- " + name_);
+				Debug.LogWarning("Moving animation incorrect number of columns -- " + name_);
 				return;
 			}
 			move1 = [1, 0, 0, 1];
@@ -240,7 +240,7 @@ class AnimationItem extends Object
 	{
 		if (isRunning)
 		{
-			Debug.Log("WARNING: Overlapped animations -- " + name);
+			Debug.LogWarning("Overlapped animations -- " + name);
 			yield;
 			return;
 		}
@@ -389,7 +389,7 @@ class AnimationItem extends Object
 			}
 			else
 			{
-				Debug.Log("WARNING: This animation type requires option Start/End/Step/Repeat -- " + name);
+				Debug.LogWarning("This animation type requires option Start/End/Step/Repeat -- " + name);
 			}
 		}
 		else if (type == AnimType.Moving)
@@ -466,7 +466,7 @@ class SpriteSkin extends Object
 			var tokens = pnglist[i].Split('-'[0]);
 			if (tokens.Length != 2 && tokens.Length != 3)
 			{
-				Debug.Log("WARNING: Incorrect number of '-' in animation name: " + path + pnglist[i]);
+				Debug.LogWarning("Incorrect number of '-' in animation name: " + path + pnglist[i]);
 				continue;
 			}
 
@@ -476,7 +476,7 @@ class SpriteSkin extends Object
 			var subtokens = animType.Split();
 			if (subtokens.Length > 2)
 			{
-				Debug.Log("WARNING: Incorrect format of animation type: " + path + pnglist[i]);
+				Debug.LogWarning("Incorrect format of animation type: " + path + pnglist[i]);
 				continue;
 			}
 
@@ -486,14 +486,14 @@ class SpriteSkin extends Object
 				var subsubtokens = subtokens[1].Split('x'[0]);
 				if (subsubtokens.Length != 2)
 				{
-					Debug.Log("WARNING: Incorrect format of animation size: " + path + pnglist[i]);
+					Debug.LogWarning("Incorrect format of animation size: " + path + pnglist[i]);
 					continue;
 				}
 				var res1 = int.TryParse(subsubtokens[0].Trim(), dimensionX);
 				var res2 = int.TryParse(subsubtokens[1].Trim(), dimensionY);
 				if (!res1 || !res2)
 				{
-					Debug.Log("WARNING: Incorrect value for animation size: " + path + pnglist[i]);
+					Debug.LogWarning("Incorrect value for animation size: " + path + pnglist[i]);
 					continue;
 				}
 			}
@@ -502,13 +502,13 @@ class SpriteSkin extends Object
 
 			if (texture.width % (minimumSpriteSize * dimensionX) > 0)
 			{
-				Debug.Log("WARNING: Pixel width incorrect: " + path + pnglist[i]);
+				Debug.LogWarning("Pixel width incorrect: " + path + pnglist[i]);
 				continue;
 			}
 
 			if (texture.height % (minimumSpriteSize * dimensionY) > 0)
 			{
-				Debug.Log("WARNING: Pixel height incorrect: " + path + pnglist[i]);
+				Debug.LogWarning("Pixel height incorrect: " + path + pnglist[i]);
 				continue;
 			}
 
@@ -594,7 +594,7 @@ class AnimatedObject extends Object
 		name = character;
 		if (!manager.animations.ContainsKey(name))
 		{
-			Debug.Log("WARNING: No such character for animation -- " + name);
+			Debug.LogWarning("No such character for animation -- " + name);
 		}
 		changeSkin(skinName);
 	}
@@ -620,14 +620,14 @@ class AnimatedObject extends Object
 	{
 		if (!manager.animations[name].ContainsKey(skinName))
 		{
-			Debug.Log("WARNING: No such skin for character -- " + skinName + " -- " + name);
+			Debug.LogWarning("No such skin for character -- " + skinName + " -- " + name);
 			return;
 		}
 		skin = manager.animations[name][skinName];
 		skin.loadTexture();
 		if (!manager.animations[name][skinName].anims.ContainsKey("Walk"))
 		{
-			Debug.Log("WARNING: No 'Move - Walk' animation found -- " + skinName + " -- " + name);
+			Debug.LogWarning("No 'Move - Walk' animation found -- " + skinName + " -- " + name);
 			return;
 		}
 	}
@@ -651,7 +651,7 @@ class AnimatedObject extends Object
 	{
 		if (!skin.anims.ContainsKey(animation))
 		{
-			Debug.Log("WARNING: No such animation for character -- " + animation + " -- " + name);
+			Debug.LogWarning("No such animation for character -- " + animation + " -- " + name);
 			yield;
 		}
 		if (currentAnimation && currentAnimation.isRunning)
@@ -722,7 +722,7 @@ class AnimationManagerScript extends MonoBehaviour
 			   			animations[dir]["Default"] = s;
 			   	}
 		    	else
-					Debug.Log("WARNING: Skin does not have Walk animation -- Default -- " + dir);
+					Debug.LogWarning("Skin does not have Walk animation -- Default -- " + dir);
 		   	}
 
 		    for (subdir in resource.getDirectoriesInPath(path))
@@ -743,7 +743,7 @@ class AnimationManagerScript extends MonoBehaviour
 			   			animations[dir][subdir] = s;
 		    	}
 		    	else
-					Debug.Log("WARNING: Skin does not have Walk animation -- " + subdir + " -- " + dir);
+					Debug.LogWarning("Skin does not have Walk animation -- " + subdir + " -- " + dir);
 		    }
 		    
 		    if (animations[dir].Count == 0)

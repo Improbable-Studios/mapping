@@ -78,3 +78,14 @@ static function getCoordsDirectional(pos : Vector3, direction : String) : String
     var y = pos.y;
     return getCoords(pos) + "_" + direction;
 }
+
+static function isValidCoords(coords : String) : boolean
+{
+    var x : int = coords[0];
+    var a : int = 'A'[0];
+    x -= a;
+    var y : int;
+    var res : boolean = int.TryParse(coords[1:], y);
+
+    return x>=0 && res;
+}
