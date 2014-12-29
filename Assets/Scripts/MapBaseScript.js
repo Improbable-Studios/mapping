@@ -162,7 +162,7 @@ class MapBaseScript extends MonoBehaviour
 	var ambience2 : AudioClip;
 	var ambience2Volume = 1f;
 
-	private var currentTime = "Morning"; // HACK: Need to move to a global state manager
+	private var currentTime = "Evening"; // HACK: Need to move to a global state manager
 
 	private var path : String;
 
@@ -198,22 +198,36 @@ class MapBaseScript extends MonoBehaviour
 
 	function OnEnable()
 	{
+        // Check that script is loaded, and play the room sounds
 		if (bgmscript == null)
 			return;
+        playBGM();
+
+        // Set the collision mask
         CameraScript.instance.setOverlayBlending(activeOverlay != null);
         if (collisionMask)
             CameraScript.instance.setRoomSize(collisionMask.width, collisionMask.height);
+
+        // Set the camera zoom (should only do AFTER setting room size)
+        if (gameObject.name.StartsWith("Exterior"))
+            CameraScript.instance.setZoom(1.0);
+        else
+            CameraScript.instance.setZoom(2.0);
+
+        // Ensure the last opened door in this map is closed
 		if (lastDoorOpened && lastDoorOpened.gameObject)
         {
 			lastDoorOpened.closeDoorInstant();
             lastDoorOpened = null;
         }
+        
+        // Activate the right NPCs in this room
+        manager.disableCharacters();
         for (var k in people.Keys)
         {
             var nameAndSkin = people[k].Split();
             manager.loadCharacter(nameAndSkin[0], k, nameAndSkin[1], peopleAnim[nameAndSkin[0]]);
         }
-		playBGM();
 	}
 
 	function initialise(path_ : String)
@@ -375,10 +389,10 @@ class MapBaseScript extends MonoBehaviour
 	    }
 	}
 
-function getPath()
-{
-    return path;
-}
+    function getPath()
+    {
+        return path;
+    }
 
 	function playBGM()
 	{

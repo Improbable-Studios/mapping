@@ -11,6 +11,7 @@ private var mode : FollowMode;
 
 private var roomSize : Vector2;
 private var screenSize : Vector2;
+var captureRect : Rect;
 private var zoom = 1f;
 
 
@@ -33,27 +34,53 @@ function Update()
 			Screen.SetResolution(res.width, res.height, true);
 	}
 
-	if (screenSize.x != Screen.width || screenSize.y != Screen.height || zoom != Screen.height / (camera.orthographicSize * 2.0 * 32.0))
-	{
-		setCameraZoom(zoom, camera);
-		initialise();
-	}
+	checkScreen();
 }
 
 function initialise()
 {
+    camera.orthographicSize = Screen.height / (2.0 * 32.0 * zoom);
+
+    if (!sr)
+        return;
     if (sr.sprite)
         Destroy(sr.sprite.texture);
+
     screenSize = Vector2(Screen.width, Screen.height);
-    var texture = new Texture2D(Screen.width/zoom, Screen.height/zoom, TextureFormat.ARGB32, false);
+    captureRect = Rect((screenSize.x-screenSize.x/zoom)/2f, (screenSize.y-screenSize.y/zoom)/2f, screenSize.x/zoom, screenSize.y/zoom);
+    captureRect.width = Mathf.Floor(captureRect.width/2f)*2f;
+    captureRect.x = (screenSize.x-captureRect.width)/2f;
+    captureRect.height = Mathf.Floor(captureRect.height/2f)*2f;
+    captureRect.y = (screenSize.y-captureRect.height)/2f;
+    if (mode == FollowMode.Smart && roomSize.x > 0)
+    {
+        if (roomSize.x < captureRect.width)
+        {
+            captureRect.width = roomSize.x;
+            captureRect.x = (screenSize.x-roomSize.x)/2f;
+        }
+        if (roomSize.y < captureRect.height)
+        {
+            captureRect.height = roomSize.y;
+            captureRect.y = (screenSize.y-roomSize.y)/2f;
+        }
+    }
+
+    var texture = new Texture2D(captureRect.width, captureRect.height, TextureFormat.ARGB32, false);
     texture.anisoLevel = 0;
     texture.filterMode = FilterMode.Point;
     var rect = Rect(0f, texture.height, texture.width, -texture.height);
     var pivot = Vector2(0.5f, 0.5f);
     sr.sprite = Sprite.Create(texture, rect, pivot, 32);
     sr.sprite.name = sr.name + "_sprite";
+
     if (followedObject)
         lookAt(followedObject);
+}
+
+function getCaptureRect()
+{
+    return captureRect;
 }
 
 function setOverlayBlending(flag : boolean)
@@ -65,10 +92,20 @@ function setOverlayBlending(flag : boolean)
         camera.cullingMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("UI"));
 }
 
-function setCameraZoom(zoom_ : float, viewingCamera : Camera)
+function checkScreen()
 {
-	zoom = zoom_;
-	viewingCamera.orthographicSize = Screen.height / (2.0 * 32.0 * zoom);
+    if (screenSize.x != Screen.width || screenSize.y != Screen.height || zoom != Screen.height / (camera.orthographicSize * 2.0 * 32.0))
+    {
+        initialise();
+    }
+}
+
+function setZoom(zoom_ : float)
+{
+    if (zoom == zoom_)
+        return;
+    zoom = zoom_;
+    initialise();
 }
 
 function roundToNearestPixel(unityUnits : float, viewingCamera : Camera)
@@ -79,9 +116,14 @@ function roundToNearestPixel(unityUnits : float, viewingCamera : Camera)
 	return adjustedUnityUnits;
 }
 
+function onePixel()
+{
+    return 1f / 32f;
+}
+
 function onePixel(viewingCamera : Camera)
 {
-	return 1f / (Screen.height / (viewingCamera.orthographicSize * 2));
+    return 1f / (Screen.height / (viewingCamera.orthographicSize * 2));
 }
 
 function setFollow(obj : GameObject, mode_ : FollowMode)
@@ -93,7 +135,10 @@ function setFollow(obj : GameObject, mode_ : FollowMode)
 
 function setRoomSize(width : float, height : float)
 {
+    if (width == roomSize.x && height == roomSize.y)
+        return;
     roomSize = Vector2(width, height);
+    initialise();
 }
 
 function lookAt(obj : GameObject)
@@ -107,19 +152,16 @@ function lookAt(obj : GameObject)
         newCameraPos.x += 0.5f;
         newCameraPos.y -= 0.5f;
     	newCameraPos.z = transform.position.z;
-    	transform.position = newCameraPos;
     }
     else if (mode == FollowMode.Smart)
     {
-//        Debug.Log(Screen.width + ", " + Screen.height + " -- " + transform.position.x * (2f * 32f) + "+" + roomSize.x*zoom +
-//                                                          ", " + -transform.position.y * (2f * 32f) + "+" + roomSize.y*zoom);
-        var screenWidth = screenSize.x / (32f * zoom);
-        var screenHeight = screenSize.y / (32f * zoom);
+        var screenWidth = captureRect.width / 32f;
+        var screenHeight = captureRect.height / 32f;
         var roomWidth = roomSize.x / 32f;
         var roomHeight = roomSize.y / 32f;
         var posX = obj.transform.position.x + 0.5f;
         var posY = -obj.transform.position.y + 0.5f;
-
+            
         newCameraPos = transform.position;
         if (screenWidth < roomWidth)
         {
@@ -144,6 +186,40 @@ function lookAt(obj : GameObject)
         }
         else
             newCameraPos.y = -roomHeight / 2f;
-        transform.position = newCameraPos;
+
+        if (MapManagerScript.shaderOutput.activeInHierarchy)
+        {
+            var shaderCamPos = Vector3();
+            if (screenSize.x % 2 == 1)
+                shaderCamPos.x = onePixel() / (2f * zoom);
+            if (screenSize.y % 2 == 1)
+                shaderCamPos.y = -onePixel() / (2f * zoom);
+            transform.position = newCameraPos;
+            MapManagerScript.shaderCamera.transform.position = shaderCamPos + newCameraPos;
+        }
+        else
+        {
+            if (screenSize.x % 2 == 1)
+                newCameraPos.x -= onePixel() / (2f * zoom);
+            if (screenSize.y % 2 == 1)
+                newCameraPos.y += onePixel() / (2f * zoom);
+        }
+
+//        Debug.Log(screenSize + " -- " + roomSize + " -- " + captureRect);
+//        Debug.Log(newCameraPos.x/onePixel() + ", " + newCameraPos.y/onePixel());
     }
+    if (SystemInfo.graphicsShaderLevel <= 30)
+    {
+        if (MapManagerScript.shaderOutput.activeInHierarchy)
+        {
+            newCameraPos.x -= onePixel() * zoom / 4f;
+            newCameraPos.y += onePixel() * zoom / 4f;
+        }
+        else
+        {
+            newCameraPos.x -= onePixel() * zoom / 8f;
+            newCameraPos.y += onePixel() * zoom / 8f;
+        }
+    }
+    transform.position = newCameraPos;
 }

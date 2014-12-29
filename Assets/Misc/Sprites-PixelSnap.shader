@@ -52,22 +52,24 @@ Shader "Sprites/Pixel Snap"
 				OUT.vertex = mul(UNITY_MATRIX_MVP, IN.vertex);
 				OUT.texcoord = TRANSFORM_TEX(IN.texcoord, _MainTex);
 
-				// Snapping params
-				float hpcX = _ScreenParams.x * 0.5;
-				float hpcY = _ScreenParams.y * 0.5;
-			#ifdef UNITY_HALF_TEXEL_OFFSET
-				float hpcOX = -0.5;
-				float hpcOY = 0.5;
-			#else
-				float hpcOX = 0;
-				float hpcOY = 0;
-			#endif	
-				// Snap
-				float pos = floor((OUT.vertex.x / OUT.vertex.w) * hpcX + 0.5f) + hpcOX;
-				OUT.vertex.x = pos / hpcX * OUT.vertex.w;
-
-				pos = floor((OUT.vertex.y / OUT.vertex.w) * hpcY + 0.5f) + hpcOY;
-				OUT.vertex.y = pos / hpcY * OUT.vertex.w;
+//				// Snapping params
+//                float hpcX = _ScreenParams.x * 0.5;
+//                float hpcY = _ScreenParams.y * 0.5;
+//                float addX = 0.5;
+//                float addY = 0.5;
+//			#ifdef UNITY_HALF_TEXEL_OFFSET
+//				float hpcOX = -0.5;
+//				float hpcOY = 0.5;
+//			#else
+//				float hpcOX = 0;
+//				float hpcOY = 0;
+//			#endif	
+//				// Snap
+//				float pos = floor((OUT.vertex.x / OUT.vertex.w) * hpcX + addX) + hpcOX;
+//				OUT.vertex.x = pos / hpcX * OUT.vertex.w;
+//
+//				pos = floor((OUT.vertex.y / OUT.vertex.w) * hpcY + addY) + hpcOY;
+//				OUT.vertex.y = pos / hpcY * OUT.vertex.w;
 
 				return OUT;
 			}

@@ -23,7 +23,7 @@ class MainPlayerScript extends MonoBehaviour
 	function Awake()
 	{
 		cam = Camera.main.GetComponent(CameraScript);
-        setCameraZoom(2.0);
+        cam.setZoom(2.0);
 		character = GetComponent(CharacterScript);
 		sr = GetComponent(SpriteRenderer);
 		sr.enabled = false;
@@ -116,11 +116,6 @@ class MainPlayerScript extends MonoBehaviour
 		Application.Quit();
 	}
 
-	function setCameraZoom(zoom : float)
-	{
-        cam.setCameraZoom(zoom, Camera.main);
-	}
-
 	function move(direction : String)
 	{
 		finishedCheckingExits = false;
@@ -181,12 +176,6 @@ class MainPlayerScript extends MonoBehaviour
 				mapManager.currentRoom = location;
 				currentRoom = mapManager.getRoomObject();
 			}
-
-            mapManager.disableCharacters();
-			if (location.StartsWith("Exterior"))
-				setCameraZoom(1.0);
-			else
-				setCameraZoom(2.0);
 
 			if (!currentRoom.activeInHierarchy)
 			{

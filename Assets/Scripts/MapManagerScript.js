@@ -12,6 +12,7 @@ class MapManagerScript extends MonoBehaviour
     static var charactersObject : GameObject;
     static var audioObject : GameObject;
     static var shaderOutput : GameObject;
+    static var shaderCamera : GameObject;
     static var roomPrefab : GameObject;
     static var characterPrefab : GameObject;
     static var doorPrefab : GameObject;
@@ -42,6 +43,7 @@ class MapManagerScript extends MonoBehaviour
         charactersObject = GameObject.Find("Characters");
         audioObject = GameObject.Find("Audio");
         shaderOutput = GameObject.Find("Shader Output");
+        shaderCamera = GameObject.Find("Shader Cameras");
         characterPrefab = Resources.Load("CharacterPrefab") as GameObject;
         roomPrefab = Resources.Load("RoomPreFab") as GameObject;
         doorPrefab = Resources.Load("DoorPrefab") as GameObject;
