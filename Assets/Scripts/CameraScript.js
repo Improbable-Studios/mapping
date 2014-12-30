@@ -208,7 +208,7 @@ function lookAt(obj : GameObject)
 //        Debug.Log(screenSize + " -- " + roomSize + " -- " + captureRect);
 //        Debug.Log(newCameraPos.x/onePixel() + ", " + newCameraPos.y/onePixel());
     }
-    if (SystemInfo.graphicsShaderLevel <= 30)
+    if (GoogleAPIScript.isHalfPixel)
     {
         if (MapManagerScript.shaderOutput.activeInHierarchy)
         {

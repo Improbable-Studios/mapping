@@ -7,6 +7,8 @@ import System.Security.Cryptography.X509Certificates;
 
 static var instance : GoogleAPIScript;
 static var isWebPlayer : boolean;
+static var isWindows : boolean;
+static var isHalfPixel : boolean;
 
 static var openedSheets : Dictionary.<String, Spreadsheet>;
 
@@ -186,6 +188,8 @@ function Awake()
     #else
     isWebPlayer = Application.isWebPlayer;
     #endif
+    isWindows = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsWebPlayer;
+    isHalfPixel = isWindows && SystemInfo.graphicsShaderLevel <= 30;
 }
 
 function Start ()
