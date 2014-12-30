@@ -196,19 +196,19 @@ function Start ()
 {
     if(!isWebPlayer)
     {
-        var sheetKey = "1Wf-zRfWngIz_6FzLZmWvTHxRmfFCihEDxgEvcac-PMo";
-        var sheetName = "Central Database";
-        var tabName = "Locations";
-        yield loadSpreadsheet(sheetKey, [tabName]);
-        var tab = openedSheets[sheetName].tabs[tabName];
-            
-        for (var row in tab.getRowDict("NSY_Exterior"))
-            Debug.Log(row.Key + " \t: " + row.Value);
-
-        for (var col in tab.getColumnDict("Location"))
-            Debug.Log(col.Key + " \t: " + col.Value);
-        
-        Debug.Log("FINISHED");
+//        var sheetKey = "1Wf-zRfWngIz_6FzLZmWvTHxRmfFCihEDxgEvcac-PMo";
+//        var sheetName = "Central Database";
+//        var tabName = "Locations";
+//        yield loadSpreadsheet(sheetKey, [tabName]);
+//        var tab = openedSheets[sheetName].tabs[tabName];
+//            
+//        for (var row in tab.getRowDict("NSY_Exterior"))
+//            Debug.Log(row.Key + " \t: " + row.Value);
+//
+//        for (var col in tab.getColumnDict("Location"))
+//            Debug.Log(col.Key + " \t: " + col.Value);
+//        
+//        Debug.Log("FINISHED");
     }
     else
         Debug.Log("Running on Web Player mode");
