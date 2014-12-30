@@ -19,7 +19,8 @@ class AnimationItem extends Object
 	var breakRepeat = false;
 	var breakRepeatAfterFinish = false;
 
-	var name : String;
+    var name : String;
+    var path : String;
 	var type : AnimType;
 	var spriteSize : Vector2;
 	var sprites : Sprite[,];
@@ -50,18 +51,19 @@ class AnimationItem extends Object
 	var rowF : int;
 	var rowD : int;
 
-	function AnimationItem(name_ : String, type_: String, spriteSize_ : Vector2, sprites_ : Sprite[,], row_ : int)
+	function AnimationItem(name_ : String, type_: String, spriteSize_ : Vector2, sprites_ : Sprite[,], row_ : int, path_ : String)
 	{
 		name = name_;
 		spriteSize = spriteSize_;
 		sprites = sprites_;
 		row = row_;
         layer = 0;
+        path = path_;
 
 		if (row+1 > sprites.GetLength(0))
 		{
 			type = AnimType.ERROR;
-			Debug.LogWarning("Animation row size incorrect -- " + name_);
+			Debug.LogWarning("Animation row size incorrect: " + path);
 			return;
 		}
 
@@ -101,7 +103,7 @@ class AnimationItem extends Object
 		else
 		{
 			type = AnimType.ERROR;
-			Debug.LogWarning("This animation type is not known - " + name);
+			Debug.LogWarning("Unknown animation type: " + path);
 			return;
 		}
 
@@ -126,20 +128,20 @@ class AnimationItem extends Object
 				else
 				{
 					type = AnimType.ERROR;
-					Debug.LogWarning("Can't parse Forward/Idle animation info -- " + name_);
+					Debug.LogWarning("Can't parse Forward/Idle animation info: " + path);
 					return;
 				}
 			}
 			if (type == AnimType.Forward && sprites.GetLength(1) != currentIndex)
 			{
 				type = AnimType.ERROR;
-				Debug.LogWarning("Forward animation incorrect number of columns -- " + name_);
+				Debug.LogWarning("Forward animation incorrect number of columns: " + path);
 				return;
 			}
 			if (type == AnimType.Directional && sprites.GetLength(1) != currentIndex * 4)
 			{
 				type = AnimType.ERROR;
-				Debug.LogWarning("Directional animation incorrect number of columns -- " + name_);
+				Debug.LogWarning("Directional animation incorrect number of columns: " + path);
 				return;
 			}
 
@@ -160,7 +162,7 @@ class AnimationItem extends Object
 			if (sprites.GetLength(1) != 12)
 			{
 				type = AnimType.ERROR;
-				Debug.LogWarning("Idle animation incorrect number of columns -- " + name_);
+				Debug.LogWarning("Idle animation incorrect number of columns: " + path);
 				return;
 			}
 			tokens = name.Split('_'[0]);
@@ -170,7 +172,7 @@ class AnimationItem extends Object
 			if (rowsize * (row+1) > sprites.GetLength(0))
 			{
 				type = AnimType.ERROR;
-				Debug.LogWarning("Idle animation row size incorrect -- " + name_);
+				Debug.LogWarning("Idle animation row size incorrect: " + path);
 				return;
 			}
 			currentIndex = 0;
@@ -191,7 +193,7 @@ class AnimationItem extends Object
 				else
 				{
 					type = AnimType.ERROR;
-					Debug.LogWarning("Can't parse Idle animation info -- " + name_);
+					Debug.LogWarning("Can't parse Idle animation info: " + path);
 					return;
 				}
 				currentIndex++;
@@ -203,7 +205,7 @@ class AnimationItem extends Object
 			if (sprites.GetLength(1) != 12)
 			{
 				type = AnimType.ERROR;
-				Debug.LogWarning("Moving animation incorrect number of columns -- " + name_);
+				Debug.LogWarning("Moving animation incorrect number of columns: " + path);
 				return;
 			}
 			move1 = [1, 0, 0, 1];
@@ -240,7 +242,7 @@ class AnimationItem extends Object
 	{
 		if (isRunning)
 		{
-			Debug.LogWarning("Overlapped animations -- " + name);
+			Debug.LogWarning("Overlapped animations: " + path);
 			yield;
 			return;
 		}
@@ -389,7 +391,7 @@ class AnimationItem extends Object
 			}
 			else
 			{
-				Debug.LogWarning("This animation type requires option Start/End/Step/Repeat -- " + name);
+				Debug.LogWarning("This animation type requires option Start/End/Step/Repeat: " + path);
 			}
 		}
 		else if (type == AnimType.Moving)
@@ -520,7 +522,7 @@ class SpriteSkin extends Object
 			var tempArray = new Array();
 			for (var k=0; k<animNames.Length; k++)
 			{
-				var anim = AnimationItem(animNames[k], animType, spriteSize, allsprites, k);
+				var anim = AnimationItem(animNames[k], animType, spriteSize, allsprites, k, path + pnglist[i]);
 				if (anim.type == AnimType.ERROR)
 				{
 					isError = true;
@@ -722,7 +724,7 @@ class AnimationManagerScript extends MonoBehaviour
 			   			animations[dir]["Default"] = s;
 			   	}
 		    	else
-					Debug.LogWarning("Skin does not have Walk animation -- Default -- " + dir);
+					Debug.LogWarning("No Walk animation: " + path);
 		   	}
 
 		    for (subdir in resource.getDirectoriesInPath(path))
@@ -743,7 +745,7 @@ class AnimationManagerScript extends MonoBehaviour
 			   			animations[dir][subdir] = s;
 		    	}
 		    	else
-					Debug.LogWarning("Skin does not have Walk animation -- " + subdir + " -- " + dir);
+					Debug.LogWarning("No Walk animation: " + subpath);
 		    }
 		    
 		    if (animations[dir].Count == 0)

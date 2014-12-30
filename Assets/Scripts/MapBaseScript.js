@@ -260,7 +260,7 @@ class MapBaseScript extends MonoBehaviour
 
 		if (!text)
 		{
-			Debug.LogWarning("No text file found in room: " + name);
+			Debug.LogWarning("No text file found in room: " + path);
 			return;
 		}
 		var resourcePrefix = "audio/";
