@@ -4,6 +4,8 @@ enum FollowMode {Always, Smart, Manual, ERROR};
 
 static var instance : CameraScript;
 
+var layers = ["Default", "UI", "Dialogue"];
+
 private var sr : SpriteRenderer;
 
 private var followedObject : GameObject;
@@ -86,10 +88,13 @@ function getCaptureRect()
 function setOverlayBlending(flag : boolean)
 {
     MapManagerScript.shaderOutput.SetActive(flag);
+    camera.cullingMask = 0;
+    for (l in layers)
+        camera.cullingMask |= (1 << LayerMask.NameToLayer(l));
     if (flag)
-        camera.cullingMask = (1 << LayerMask.NameToLayer("Final")) | (1 << LayerMask.NameToLayer("UI"));
+        camera.cullingMask |= (1 << LayerMask.NameToLayer("MapFinal"));
     else
-        camera.cullingMask = (1 << LayerMask.NameToLayer("Default")) | (1 << LayerMask.NameToLayer("UI"));
+        camera.cullingMask |= (1 << LayerMask.NameToLayer("MapBase"));
 }
 
 function checkScreen()

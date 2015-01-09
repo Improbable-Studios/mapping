@@ -417,7 +417,14 @@ class AnimationItem extends Object
 
 		isRunning = false;
 	}
-	
+
+    function stopNonCoroutine()
+    {
+        breakRepeat = true;
+        while (isRunning)
+            continue;
+    }
+
 	function stop()
 	{
 		breakRepeat = true;

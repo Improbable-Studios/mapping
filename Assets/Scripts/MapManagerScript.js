@@ -24,8 +24,8 @@ class MapManagerScript extends MonoBehaviour
     var locations = Dictionary.<String, Dictionary.<String, GameObject> >();
     var characters = Dictionary.<String, GameObject>();
 	
-	var currentLocation = "221"; // HACK: Need to move to global state manager
-	var currentRoom = "Interior/221B/Stairwell"; // HACK: Need to move to global state manager
+//	var currentLocation = "221"; // HACK: Need to move to global state manager
+//	var currentRoom = "Interior/221B/Stairwell"; // HACK: Need to move to global state manager
 	
 	private var resource : ResourceManagerScript;
 
@@ -96,12 +96,12 @@ class MapManagerScript extends MonoBehaviour
 
 		if (System.Type.GetType(customScriptName))
 		{
-			GameObject.DestroyImmediate(r.GetComponent(MapBaseScript));
+			GameObject.DestroyImmediate(r.GetComponent(RoomScript));
 			r.AddComponent(customScriptName);
-			var script : MapBaseScript = r.GetComponent(customScriptName) as MapBaseScript;
+			var script : RoomScript = r.GetComponent(customScriptName) as RoomScript;
 		}
 		else
-			script = r.GetComponent(MapBaseScript);
+			script = r.GetComponent(RoomScript);
 		script.collisionMask = collisionTexture;
 		script.text = configText;
 		script.initialise(resourcePrefix);
@@ -116,14 +116,14 @@ class MapManagerScript extends MonoBehaviour
 		var childs : int = roomsObject.transform.childCount;
 		for (var i = childs - 1; i >= 0; i--)
 			GameObject.DestroyImmediate(roomsObject.transform.GetChild(i).gameObject);
-		currentLocation = loc;
+		GameData.instance.current.location = loc;
 
 		var pivot : Vector2 = Vector2(0f, 0f); //top left;
 		var newRooms = new Dictionary.<String, GameObject>();
 		for (k in locations[loc].Keys)
 		{
-		    var resourcePrefix = pathToMaps + "/" + currentLocation + "/" + k;
-			var customScriptName = "Map" + currentLocation + k.Replace("/", "");		
+		    var resourcePrefix = pathToMaps + "/" + GameData.instance.current.location + "/" + k;
+			var customScriptName = "Map" + GameData.instance.current.location + k.Replace("/", "");		
 			newRooms[k] = loadRoom(k, resourcePrefix, customScriptName);
 		}
 		locations[loc] = newRooms;
@@ -143,9 +143,9 @@ class MapManagerScript extends MonoBehaviour
 
 	function listOfRooms()
 	{
-		var res = new String[locations[currentLocation].Count];
+		var res = new String[locations[GameData.instance.current.location].Count];
 		var i = 0;
-		for (var k in locations[currentLocation].Keys)
+		for (var k in locations[GameData.instance.current.location].Keys)
 		{
 			res[i] = k;
 			i++;
@@ -155,17 +155,17 @@ class MapManagerScript extends MonoBehaviour
 
 	function isRoomExist(room : String)
 	{
-		return locations[currentLocation].ContainsKey(room);
+		return locations[GameData.instance.current.location].ContainsKey(room);
 	}
 
 	function getRoomObject()
 	{
-		return getRoomObject(currentRoom);
+		return getRoomObject(GameData.instance.current.room);
 	}
 
 	function getRoomObject(room : String)
 	{
-		return locations[currentLocation][room];
+		return locations[GameData.instance.current.location][room];
 	}
 
     function loadCharacter(name : String, coords : String, skin : String, animation : String)

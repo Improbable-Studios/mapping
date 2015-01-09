@@ -13,7 +13,8 @@ class CharacterScript extends MonoBehaviour
     var triggerPostEvents = false;
     var triggerDoors = false;
 
-	private var map : MapBaseScript;
+    private var isPlayer : boolean;
+	private var room : RoomScript;
 
 	private var animScript : AnimationManagerScript;
 	private var anim : AnimatedObject;
@@ -28,6 +29,7 @@ class CharacterScript extends MonoBehaviour
 	{
 		cameraScript = Camera.main.GetComponent(CameraScript);
 		sr = GetComponent(SpriteRenderer);
+        isPlayer = gameObject.tag == "Player";
 	}
 
 	function Start ()
@@ -42,20 +44,20 @@ class CharacterScript extends MonoBehaviour
         return Grid.getCoords(transform.position);
     }
 
-	function changeRoom(map_ : MapBaseScript, coords : String)
+	function changeRoom(room_ : RoomScript, coords : String)
 	{
         warpTo(coords);
-        map = map_;
+        room = room_;
         if (triggerDoors)
         {
-            var door = map.checkAtDoorEvent(transform.position, direction);
+            var door = room.checkAtDoorEvent(transform.position, direction);
             if (door != null)
             {
                 door.openDoorInstant();
             }
             else
             {
-                door = map.checkDoorLeftEvent(transform.position, direction);
+                door = room.checkDoorLeftEvent(transform.position, direction);
                 if (door != null)
                 {
                     door.openDoorInstant();
@@ -79,6 +81,11 @@ class CharacterScript extends MonoBehaviour
     {
         transform.position = Grid.getPos(coords);
         updateCamera();
+        if (isPlayer)
+        {
+            GameData.instance.current.coords = getCoords();
+            GameData.instance.current.direction = direction;
+        }
     }
 
     function setCharacter(character_ : String, coords : String, skin_ : String, animation : String)
@@ -118,7 +125,7 @@ class CharacterScript extends MonoBehaviour
         sr.enabled = false;
         if (anim && anim.isRunning())
         {
-            yield StartCoroutine(anim.stop());
+            StartCoroutine(anim.stop());
         }
         gameObject.SetActive(false);
     }
@@ -146,6 +153,12 @@ class CharacterScript extends MonoBehaviour
 	{
 		yield StartCoroutine(anim.run(animName, [direction] + animOptions));
 	}
+
+    function changeDirection(direction_ : String)
+    {
+        direction = direction_;
+        animate(moveAnimation, [direction, "Idle"]);
+    }
 
 	function moving()
 	{
@@ -176,7 +189,7 @@ class CharacterScript extends MonoBehaviour
 		{
 			if (useMapCollisionMask)
 			{
-				if (!map.isWalkable(dest, direction))
+				if (!room.isWalkable(dest, direction))
 				{
 					animate(moveAnimation, [direction, "Idle"]);
 					return;
@@ -185,10 +198,10 @@ class CharacterScript extends MonoBehaviour
 
 			if (triggerPreEvents)
 			{
-				var name = map.checkPreEvent(transform.position, direction);
+				var name = room.checkPreEvent(transform.position, direction);
 				if (name != "")
 				{
-					map.StartCoroutine(name, 0f);
+					room.StartCoroutine(name, 0f);
 					return;
 				}
 			}
@@ -200,7 +213,7 @@ class CharacterScript extends MonoBehaviour
 		{
             if (triggerDoors)
             {
-                var door = map.checkDoorEnteringEvent(transform.position, direction);
+                var door = room.checkDoorEnteringEvent(transform.position, direction);
                 if (door != null)
                     yield StartCoroutine(door.openDoor());
             }
@@ -210,6 +223,11 @@ class CharacterScript extends MonoBehaviour
 			distance--;
 		}
 		isMoving = false;
+        if (isPlayer)
+        {
+            GameData.instance.current.coords = getCoords();
+            GameData.instance.current.direction = direction;
+        }
 	}
 
 	function moveCoroutine(bypass : boolean)
@@ -241,14 +259,14 @@ class CharacterScript extends MonoBehaviour
 			{
 				if (!bypass && triggerPostEvents)
 				{
-					var name = map.checkPostEvent(transform.position, direction);
+					var name = room.checkPostEvent(transform.position, direction);
 					if (name != "")
-						map.StartCoroutine(name);
+						room.StartCoroutine(name);
 				}
                 if (triggerDoors)
                 {
-    			    var door = map.checkDoorLeftEvent(transform.position, direction);
-    	            if (door != null && door != map.checkAtDoorEvent(transform.position, direction))
+    			    var door = room.checkDoorLeftEvent(transform.position, direction);
+    	            if (door != null && door != room.checkAtDoorEvent(transform.position, direction))
     	            {                        
     	                StartCoroutine(door.closeDoor());
     	            }

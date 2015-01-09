@@ -9,7 +9,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 400000}
   - 212: {fileID: 21200000}
-  m_Layer: 8
+  m_Layer: 9
   m_Name: Ambience-Evening
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -25,7 +25,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 400002}
   - 212: {fileID: 21200002}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -57,7 +57,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 400006}
   - 212: {fileID: 21200004}
-  m_Layer: 8
+  m_Layer: 9
   m_Name: Ambience-Afternoon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -73,7 +73,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 400008}
   - 212: {fileID: 21200006}
-  m_Layer: 8
+  m_Layer: 9
   m_Name: Ambience-Morning
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -89,7 +89,7 @@ GameObject:
   m_Component:
   - 4: {fileID: 400010}
   - 212: {fileID: 21200008}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: front
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -192,7 +192,7 @@ MonoBehaviour:
   ambience1Volume: 1
   ambience2: {fileID: 0}
   ambience2Volume: 1
-  currentDoor:
+  lastDoorOpened:
     map: {fileID: 0}
     gameObject: {fileID: 0}
     sr: {fileID: 0}
@@ -202,6 +202,45 @@ MonoBehaviour:
       breakRepeat: 0
       breakRepeatAfterFinish: 0
       name: 
+      path: 
+      type: 0
+      spriteSize: {x: 0, y: 0}
+      row: 0
+      layer: 0
+      progressive: 
+      stepping: 
+      repeating: 
+      south: 0
+      west: 0
+      north: 0
+      east: 0
+      alternateMove: 0
+      move1: 
+      move2: 
+      rowU: 0
+      rowF: 0
+      rowD: 0
+    type: 0
+    state: 
+    speed: 0
+    defaultSFXPrefix: 
+    openClip: {fileID: 0}
+    closeClip: {fileID: 0}
+    sfxScript: {fileID: 0}
+    sfxObject: {fileID: 0}
+    openSFXFromStart: 0
+    closeSFXFromStart: 0
+  lastDoorClosed:
+    map: {fileID: 0}
+    gameObject: {fileID: 0}
+    sr: {fileID: 0}
+    anim:
+      framesPerSecond: 0
+      isRunning: 0
+      breakRepeat: 0
+      breakRepeatAfterFinish: 0
+      name: 
+      path: 
       type: 0
       spriteSize: {x: 0, y: 0}
       row: 0

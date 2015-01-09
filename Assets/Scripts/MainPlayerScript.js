@@ -2,6 +2,8 @@
 
 class MainPlayerScript extends MonoBehaviour
 {
+    static var instance : MainPlayerScript;
+
 	var disableInputs = false;
 	var triggerExits = true;
 	var triggerInteracts = true;
@@ -10,10 +12,10 @@ class MainPlayerScript extends MonoBehaviour
 	private var finishedCheckingExits = true;
 
 	private var isChangingRoom = false;
-	private var currentRoom : GameObject;
+	private var roomObject : GameObject;
 
 	private var cam : CameraScript;
-	private var map : MapBaseScript;
+	private var roomScript : RoomScript;
 	private var character : CharacterScript;
 	private var mapManager : MapManagerScript;
 	private var sr : SpriteRenderer;
@@ -22,6 +24,8 @@ class MainPlayerScript extends MonoBehaviour
 	
 	function Awake()
 	{
+        instance = this;
+
 		cam = Camera.main.GetComponent(CameraScript);
         cam.setZoom(2.0);
 		character = GetComponent(CharacterScript);
@@ -38,20 +42,12 @@ class MainPlayerScript extends MonoBehaviour
 
 		quitMenu.alpha = 0f;
 		quitMenu.interactable = false;
-        yield ScreenFaderScript.fadeOut(0.0f, Color.black);
 
         cam.setFollow(gameObject, FollowMode.Smart);
-
         mapManager = MapManagerScript.instance;
-        mapManager.loadLocation(location);
-		currentRoom = mapManager.getRoomObject(room);
-		map = currentRoom.GetComponent(MapBaseScript);
-		yield changeRoom(room, coords);
-        yield WaitForSeconds(0.5);
 
-		sr.enabled = true;
-		character.move("South", 4, true);
-		ScreenFaderScript.fadeIn(1f, Color.black);        
+        yield changeLocation(location, room, coords, "South", "Morning", 1f);       
+        yield character.move("South", 4, true);
 	}
 
 	function Update ()
@@ -66,7 +62,7 @@ class MainPlayerScript extends MonoBehaviour
 				&& !Input.GetKey(KeyCode.DownArrow)
 				&& !Input.GetKey(KeyCode.UpArrow)
 				&& !Input.GetKey(KeyCode.LeftArrow))
-			isKeyUpAfterWalking = true;
+			isKeyUpAfterWalking = true;     
 
 		// Check for active inputs
 		if (!character.moving() && !isChangingRoom && !disableInputs && finishedCheckingExits)
@@ -85,9 +81,9 @@ class MainPlayerScript extends MonoBehaviour
 			move("West");
 		else if (triggerInteracts && Input.GetKeyDown(KeyCode.Space))
 		{
-			var name = map.checkInteract(transform.position, character.direction);
+			var name = roomScript.checkInteract(transform.position, character.direction);
 			if (name != "")
-				map.StartCoroutine(name);
+				roomScript.StartCoroutine(name);
 		}
 		else if (Input.GetKeyDown(KeyCode.Escape))
 		{
@@ -102,6 +98,14 @@ class MainPlayerScript extends MonoBehaviour
 			var animName = anims[Random.Range(0, anims.Length)];
 			character.animate(animName, ["Random"]);
 		}
+        else if (Input.GetKeyUp(KeyCode.S))
+            GameData.instance.save("1");
+        else if (Input.GetKeyUp(KeyCode.L))
+        {
+            GameData.instance.load("1");
+            var current = GameData.instance.current;
+            changeLocation(current.location, current.room, current.coords, current.direction, current.time, 0.2f);
+        }
 	}
 
 	function cancelQuit()
@@ -134,14 +138,14 @@ class MainPlayerScript extends MonoBehaviour
 
 	function checkExit()
 	{
-		var name = map.checkExit(transform.position, character.direction);
+		var name = roomScript.checkExit(transform.position, character.direction);
 		if (name != "")
 		{
 			var tokens = name.Split();
-			var methodInfo = typeof(map).GetMethod(tokens[0]);
+			var methodInfo = typeof(roomScript).GetMethod(tokens[0]);
 			var success = true;
 			if (methodInfo)
-				success = methodInfo.Invoke(map, []);
+				success = methodInfo.Invoke(roomScript, []);
 			if (success == true)
 			{
 				var subtokens = tokens[2].Split('_'[0]);
@@ -164,32 +168,48 @@ class MainPlayerScript extends MonoBehaviour
 		yield;
 	}
 
-	function changeRoom(location : String, coords : String)
+    function changeLocation(location : String, room : String, coords : String, direction : String, time : String, fade : float)
+    {
+        yield ScreenFaderScript.fadeOut(fade, Color.black);
+
+        GameData.instance.current.time = time;
+        mapManager.loadLocation(location);
+        roomObject = mapManager.getRoomObject(room);
+        roomScript = roomObject.GetComponent(RoomScript);
+
+        yield changeRoom(room, coords);
+        character.changeDirection(direction);
+        yield WaitForSeconds(fade);
+
+        ScreenFaderScript.fadeIn(fade, Color.black);
+    }
+
+	function changeRoom(room : String, coords : String)
 	{
 		isChangingRoom = true;
-		if (mapManager.isRoomExist(location))
+		if (mapManager.isRoomExist(room))
 		{
-			if (mapManager.getRoomObject(location) != currentRoom)
+			if (mapManager.getRoomObject(room) != roomObject)
 			{
-				yield fadeOutRoom(currentRoom);
-                currentRoom.SetActive(false);
-				mapManager.currentRoom = location;
-				currentRoom = mapManager.getRoomObject();
+				yield fadeOutRoom(roomObject);
+                roomObject.SetActive(false);
+                GameData.instance.current.room = room;
+				roomObject = mapManager.getRoomObject();
 			}
 
-			if (!currentRoom.activeInHierarchy)
+			if (!roomObject.activeInHierarchy)
 			{
-                currentRoom.SetActive(true);
-				map = currentRoom.GetComponent(MapBaseScript) as MapBaseScript;
-				character.changeRoom(map, coords);
-                yield fadeInRoom(currentRoom);
+                roomObject.SetActive(true);
+				roomScript = roomObject.GetComponent(RoomScript) as RoomScript;
+				character.changeRoom(roomScript, coords);
+                yield fadeInRoom(roomObject);
 			}
 			else
 				yield;
 		}
 		else
 		{
-			Debug.Log("Room don't exist: " + location);
+			Debug.Log("Room don't exist: " + room);
 			yield;
 		}
 		isChangingRoom = false;

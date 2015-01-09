@@ -1,6 +1,9 @@
 ﻿#pragma strict
 
+import System;
 import System.IO;
+import System.Collections.Generic;
+import System.Runtime.Serialization.Formatters.Binary;
 
 @CustomEditor (ResourceManagerScript)
 public class ResourceManagerEditor extends Editor
@@ -10,13 +13,22 @@ public class ResourceManagerEditor extends Editor
         DrawDefaultInspector();
         
         var myScript : ResourceManagerScript = target as ResourceManagerScript;
-        if(GUILayout.Button("Generate JSON Directory"))
+        if(GUILayout.Button("Refresh Resources"))
         {
-			var json = myScript.generateJSON();
-			var f = File.CreateText(Application.dataPath + "/Resources/directory.json");
-			f.Write(json);
-			f.Close();
-			AssetDatabase.Refresh();
+            myScript.generateDirectoryJSON();
+            myScript.downloadLocationsSpreadsheet();
+
+            var r = ResourceSerializable();
+            r.directoryJsonStr = myScript.directoryJson.ToString();
+            r.locationsTab = myScript.locationsTab;
+            var str = myScript.serialize(r);
+
+            var f = File.CreateText(Application.dataPath + "/Data/Resources/resource.txt");
+            f.Write(str);
+            f.Close();
+            AssetDatabase.Refresh();
+            
+            Debug.Log("DONE: File saved!");
        	}
     }
 }

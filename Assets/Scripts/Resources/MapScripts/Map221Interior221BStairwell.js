@@ -1,6 +1,6 @@
 ﻿#pragma strict
 
-class Map221Interior221BStairwell extends MapBaseScript
+class Map221Interior221BStairwell extends RoomScript
 {
 	private var player : MainPlayerScript;
 	private var character : CharacterScript;

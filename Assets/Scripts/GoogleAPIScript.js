@@ -10,21 +10,23 @@ static var isWebPlayer : boolean;
 static var isWindows : boolean;
 static var isHalfPixel : boolean;
 
-static var openedSheets : Dictionary.<String, Spreadsheet>;
+static var openedSheets = Dictionary.<String, Spreadsheet>();
 
 static private var accessToken : JSONClass;
 static private var expireTime = 0;
 
+@System.Serializable
 class SpreadsheetTab extends Object
 {
     var name : String;
-    var tabJSON : JSONClass;
+    var tabJSONStr : String;
     var content : String[,];
 
-    function SpreadsheetTab(name_ : String, tabJSON_ : JSONClass)
+    function SpreadsheetTab(name_ : String, tabJSONStr_ : String)
     {
         name = name_;
-        tabJSON = tabJSON_;
+        tabJSONStr = tabJSONStr_;
+        var tabJSON = JSONNode.Parse(tabJSONStr);
 
         var listOfCellsJSON = tabJSON["feed"]["entry"];
         var maxRows = 0;
@@ -156,11 +158,12 @@ class SpreadsheetTab extends Object
     }
 }
 
+@System.Serializable
 class Spreadsheet extends Object
 {
     var sheetKey : String;
-    var sheetJSON : JSONClass;
-    var tabJSON : Dictionary.<String, JSONClass>;
+    var sheetJSONStr : String;
+    var tabJSONStr : Dictionary.<String, String>;
     
     var tabs : Dictionary.<String, SpreadsheetTab>;
 
@@ -172,9 +175,9 @@ class Spreadsheet extends Object
     function refreshContents()
     {
         tabs = Dictionary.<String, SpreadsheetTab>();
-        for (key in tabJSON.Keys)
+        for (key in tabJSONStr.Keys)
         {
-            tabs[key] = SpreadsheetTab(key, tabJSON[key]);
+            tabs[key] = SpreadsheetTab(key, tabJSONStr[key]);
         }
     }
 }
@@ -182,6 +185,7 @@ class Spreadsheet extends Object
 function Awake()
 {
     instance = this;
+    expireTime = 0;
     openedSheets = Dictionary.<String, Spreadsheet>();
     #if UNITY_EDITOR
     isWebPlayer = Application.isWebPlayer || EditorUserBuildSettings.activeBuildTarget == BuildTarget.WebPlayer;
@@ -194,46 +198,28 @@ function Awake()
 
 function Start ()
 {
-    if(!isWebPlayer)
-    {
-//        var sheetKey = "1Wf-zRfWngIz_6FzLZmWvTHxRmfFCihEDxgEvcac-PMo";
-//        var sheetName = "Central Database";
-//        var tabName = "Locations";
-//        yield loadSpreadsheet(sheetKey, [tabName]);
-//        var tab = openedSheets[sheetName].tabs[tabName];
-//            
-//        for (var row in tab.getRowDict("NSY_Exterior"))
-//            Debug.Log(row.Key + " \t: " + row.Value);
-//
-//        for (var col in tab.getColumnDict("Location"))
-//            Debug.Log(col.Key + " \t: " + col.Value);
-//        
-//        Debug.Log("FINISHED");
-    }
-    else
-        Debug.Log("Running on Web Player mode");
 }
 
-function loadSpreadsheet(sheetKey : String, tabsToLoad : String[])
+static function loadSpreadsheet(sheetKey : String, tabsToLoad : String[])
 {
     var sheet = Spreadsheet(sheetKey);
     var res = [JSONClass()] as JSONClass[];
-    yield GoogleAPIScript.instance.download("https://spreadsheets.google.com/feeds/worksheets/" + sheet.sheetKey + "/private/basic", res);
-    sheet.sheetJSON = res[0];
-    var listOfTabsJSON = sheet.sheetJSON["feed"]["entry"];
+    GoogleAPIScript.instance.download("https://spreadsheets.google.com/feeds/worksheets/" + sheet.sheetKey + "/private/basic", res);
+    sheet.sheetJSONStr = res[0].ToString();
+    var listOfTabsJSON = res[0]["feed"]["entry"];
 
     if (listOfTabsJSON)
     {
-        var sheetName = sheet.sheetJSON["feed"]["title"]["$t"].Value as String;
-        sheet.tabJSON = Dictionary.<String, JSONClass>();        
+        var sheetName = res[0]["feed"]["title"]["$t"].Value as String;
+        sheet.tabJSONStr = Dictionary.<String, String>();        
         for (var i=0; i<listOfTabsJSON.Count; i++)
         {
             var tabName = listOfTabsJSON[i]["title"]["$t"].Value as String;
             if (tabName in tabsToLoad)
             {
                 res = [JSONClass()] as JSONClass[];
-                yield GoogleAPIScript.instance.download(listOfTabsJSON[i]["link"][1]["href"], res);
-                sheet.tabJSON[listOfTabsJSON[i]["title"]["$t"]] = res[0];
+                GoogleAPIScript.instance.download(listOfTabsJSON[i]["link"][1]["href"], res);
+                sheet.tabJSONStr[listOfTabsJSON[i]["title"]["$t"]] = res[0].ToString();
             }
         }
         sheet.refreshContents();
@@ -241,19 +227,49 @@ function loadSpreadsheet(sheetKey : String, tabsToLoad : String[])
     }    
 }
 
-function download(url : String, f : function(JSONClass))
+function loadSpreadsheetCoroutine(sheetKey : String, tabsToLoad : String[])
 {
-    yield downloadAccessToken();
+    var sheet = Spreadsheet(sheetKey);
+    var res = [JSONClass()] as JSONClass[];
+    yield GoogleAPIScript.instance.downloadCoroutine("https://spreadsheets.google.com/feeds/worksheets/" + sheet.sheetKey + "/private/basic", res);
+    sheet.sheetJSONStr = res[0].ToString();
+    var listOfTabsJSON = res[0]["feed"]["entry"];
+
+    if (listOfTabsJSON)
+    {
+        var sheetName = res[0]["feed"]["title"]["$t"].Value as String;
+        sheet.tabJSONStr = Dictionary.<String, String>();        
+        for (var i=0; i<listOfTabsJSON.Count; i++)
+        {
+            var tabName = listOfTabsJSON[i]["title"]["$t"].Value as String;
+            if (tabName in tabsToLoad)
+            {
+                res = [JSONClass()] as JSONClass[];
+                yield GoogleAPIScript.instance.downloadCoroutine(listOfTabsJSON[i]["link"][1]["href"], res);
+                sheet.tabJSONStr[listOfTabsJSON[i]["title"]["$t"]] = res[0].ToString();
+            }
+        }
+        sheet.refreshContents();
+        openedSheets[sheetName] = sheet;
+    }    
+}
+
+static function makeWWW(url : String)
+{
     if (url.Contains("?"))
         url += "&alt=json-in-script&callback=importGSS";
     else
         url += "?alt=json-in-script&callback=importGSS";
     url += "&access_token=" + accessToken["access_token"];
     var w : WWW = WWW(url);
-    yield w;
+    return w;
+}
+
+static function onFinishedDownload(w : WWW, f : function(JSONClass))
+{
     if (w.error)
     {
-        Debug.LogError("Download error: " + w.error + " -- URL: " + url);
+        Debug.LogError("Download error: " + w.error + " -- URL: " + w.url);
         f(null);
     }
     else
@@ -263,19 +279,45 @@ function download(url : String, f : function(JSONClass))
     }
 }
 
-function download(url : String, result : JSONClass[])
+static function download(url : String, f : function(JSONClass))
+{
+    downloadAccessToken();
+
+    var w = makeWWW(url);
+    while (!w.isDone);
+    onFinishedDownload(w, f);
+}
+
+function downloadCoroutine(url : String, f : function(JSONClass))
+{
+    yield downloadAccessTokenCoroutine();
+    var w = makeWWW(url);
+    yield w;
+    onFinishedDownload(w, f);
+}
+
+static function download(url : String, result : JSONClass[])
 {
     var downloadCallback = function(json : JSONClass)
     {
         result[0] = json;
     };
     
-    yield download(url, downloadCallback);
+    download(url, downloadCallback);
 }
 
-function downloadAccessToken ()
+function downloadCoroutine(url : String, result : JSONClass[])
 {
-    var issueAndExpiry = getIssueAndExpiryDate();
+    var downloadCallback = function(json : JSONClass)
+    {
+        result[0] = json;
+    };
+    
+    yield downloadCoroutine(url, downloadCallback);
+}
+
+static function makeAccessTokenWWW(issueAndExpiry : int[])
+{
     if (issueAndExpiry[0]+300 < expireTime)
         return;
 
@@ -294,18 +336,44 @@ function downloadAccessToken ()
     var rsa: RSACryptoServiceProvider = x.PrivateKey as RSACryptoServiceProvider;
     var signedBytes = rsa.SignData(bytesToSign, "SHA256");
     var jwt = base64Encode(header) + "." + base64Encode(serializeHashTable(claimsetObj)) + "." + base64Encode(signedBytes);
-
     var form : WWWForm = WWWForm();
     form.AddField("assertion", jwt);
     form.AddField("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
     var w : WWW = WWW("https://www.googleapis.com/oauth2/v3/token", form);
-    yield w;
-    if (w.error)
-        Debug.LogError("Download error: " + w.error);
-    else
+    return w;
+}
+
+static function downloadAccessToken ()
+{
+    var issueAndExpiry = getIssueAndExpiryDate();
+    var w = makeAccessTokenWWW(issueAndExpiry);
+    if (w)
     {
-        accessToken = JSONNode.Parse(w.text) as JSONClass;
-        expireTime = issueAndExpiry[1];
+        while (!w.isDone);
+        if (w.error)
+            Debug.LogError("Download error: " + w.error);
+        else
+        {
+            accessToken = JSONNode.Parse(w.text) as JSONClass;
+            expireTime = issueAndExpiry[1];
+        }
+    }
+}
+
+function downloadAccessTokenCoroutine ()
+{
+    var issueAndExpiry = getIssueAndExpiryDate();
+    var w = makeAccessTokenWWW(issueAndExpiry);
+    if (w)
+    {
+        yield w;
+        if (w.error)
+            Debug.LogError("Download error: " + w.error);
+        else
+        {
+            accessToken = JSONNode.Parse(w.text) as JSONClass;
+            expireTime = issueAndExpiry[1];
+        }
     }
 }
 
@@ -360,8 +428,8 @@ static function getIssueAndExpiryDate() : int[]
     var utc0 = DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
     var issueTime = DateTime.UtcNow;
 
-    var iat :int = issueTime.Subtract(utc0).TotalSeconds;
-    var exp :int = issueTime.AddMinutes(55).Subtract(utc0).TotalSeconds;
+    var iat : int = issueTime.Subtract(utc0).TotalSeconds;
+    var exp : int = issueTime.AddMinutes(55).Subtract(utc0).TotalSeconds;
 
     return [iat, exp];
 }

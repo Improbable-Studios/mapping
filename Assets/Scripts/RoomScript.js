@@ -4,7 +4,7 @@ import System.Collections.Generic;
 
 class DoorObject extends Object
 {
-    var map : MapBaseScript;
+    var room : RoomScript;
     var gameObject : GameObject;
     var sr : SpriteRenderer;
     var anim : AnimationItem;
@@ -20,9 +20,9 @@ class DoorObject extends Object
     var openSFXFromStart : boolean;
     var closeSFXFromStart : boolean;
     
-    function DoorObject(map_ : MapBaseScript, gameObject_ : GameObject, sr_ : SpriteRenderer, anim_ : AnimationItem, coords : String, sfx : String[])
+    function DoorObject(room_ : RoomScript, gameObject_ : GameObject, sr_ : SpriteRenderer, anim_ : AnimationItem, coords : String, sfx : String[])
     {
-        map = map_;
+        room = room_;
         gameObject = gameObject_;
         sr = sr_;
         anim = anim_;
@@ -59,7 +59,7 @@ class DoorObject extends Object
             sfxScript = sfxObject.GetComponent(AudioScript);
         }
         else if (sfx && sfx.Length != 0)
-            Debug.LogWarning("Door SFX not set correctly: " + gameObject.name + " in " + map.getPath());
+            Debug.LogWarning("Door SFX not set correctly: " + gameObject.name + " in " + room.getPath());
     }
 
     function setLayerOrder(state : String)
@@ -82,7 +82,7 @@ class DoorObject extends Object
 
    function openDoorInstant()
     {
-        map.lastDoorOpened = this;
+        room.lastDoorOpened = this;
         setLayerOrder("Opened");
         sr.sprite = anim.sprites[0, anim.sprites.GetLength(1)-1];
         state = "Opened";
@@ -97,7 +97,7 @@ class DoorObject extends Object
     {
         if (anim && anim.isRunning)
         {
-            map.StopCoroutine("anim.run");
+            room.StopCoroutine("anim.run");
             anim.isRunning = false;
             closeDoorInstant();
         }
@@ -105,8 +105,8 @@ class DoorObject extends Object
         {
             if (sfxScript && openClip && openSFXFromStart)
                 sfxScript.StartCoroutine(sfxScript.changeClip(openClip, 1f, true, true));
-            map.lastDoorOpened = this;
-            yield map.StartCoroutine(anim.run(sr, speed * speedModifier, ["Start"]));
+            room.lastDoorOpened = this;
+            yield room.StartCoroutine(anim.run(sr, speed * speedModifier, ["Start"]));
             if (sfxScript && openClip && !openSFXFromStart && state == "Closed")
                 sfxScript.StartCoroutine(sfxScript.changeClip(openClip, 1f, true, true));
         }
@@ -120,7 +120,7 @@ class DoorObject extends Object
         setLayerOrder("Closed");
         sr.sprite = anim.sprites[0, 0];
         state = "Closed";
-        map.lastDoorClosed = this;
+        room.lastDoorClosed = this;
     }
 
     function closeDoor()
@@ -132,7 +132,7 @@ class DoorObject extends Object
     {
         if (anim && anim.isRunning)
         {
-            map.StopCoroutine("anim.run");
+            room.StopCoroutine("anim.run");
             anim.isRunning = false;
             openDoorInstant();
         }
@@ -141,8 +141,8 @@ class DoorObject extends Object
         {
             if (sfxScript && closeClip && closeSFXFromStart)
                 sfxScript.StartCoroutine(sfxScript.changeClip(closeClip, 1f, true, true));
-            map.lastDoorClosed = this;
-            yield map.StartCoroutine(anim.run(sr, speed * speedModifier, ["Stop"]));
+            room.lastDoorClosed = this;
+            yield room.StartCoroutine(anim.run(sr, speed * speedModifier, ["Stop"]));
             if (sfxScript && closeClip && !closeSFXFromStart && state == "Opened")
                 sfxScript.StartCoroutine(sfxScript.changeClip(closeClip, 1f, true, true));
         }
@@ -151,7 +151,7 @@ class DoorObject extends Object
     }
 }
 
-class MapBaseScript extends MonoBehaviour
+class RoomScript extends MonoBehaviour
 {
 	var collisionMask : Texture2D;
 	var text : TextAsset;
@@ -161,8 +161,6 @@ class MapBaseScript extends MonoBehaviour
 	var ambience1Volume = 1f;
 	var ambience2 : AudioClip;
 	var ambience2Volume = 1f;
-
-	private var currentTime = "Evening"; // HACK: Need to move to a global state manager
 
 	private var path : String;
 
@@ -249,11 +247,11 @@ class MapBaseScript extends MonoBehaviour
 		afternoon.enabled = false;
 		evening.enabled = false;
 		activeOverlay = null;
-		if (morning.sprite && currentTime == "Morning")
+		if (morning.sprite && GameData.instance.current.time == "Morning")
 			activeOverlay = morning;
-		else if (afternoon.sprite && currentTime == "Afternoon")
+		else if (afternoon.sprite && GameData.instance.current.time == "Afternoon")
 			activeOverlay = afternoon;
-		else if (evening.sprite && currentTime == "Evening")
+		else if (evening.sprite && GameData.instance.current.time == "Evening")
 			activeOverlay = evening;
 		if (activeOverlay)
 			activeOverlay.enabled = true;
@@ -275,7 +273,7 @@ class MapBaseScript extends MonoBehaviour
 			if (line.StartsWith("BGM"))
 			{
 				var tokens = line.Split(' '[0]);
-				if (tokens[0].EndsWith(currentTime))
+				if (tokens[0].EndsWith(GameData.instance.current.time))
 				{
 					bgm = Resources.Load(resourcePrefix + tokens[1].Trim()) as AudioClip;
 					bgmVolume = float.Parse(tokens[2].Trim());
@@ -284,7 +282,7 @@ class MapBaseScript extends MonoBehaviour
 			else if (line.StartsWith("Ambience1"))
 			{
 				tokens = line.Split(' '[0]);
-				if (tokens[0].EndsWith(currentTime))
+				if (tokens[0].EndsWith(GameData.instance.current.time))
 				{
 					ambience1 = Resources.Load(resourcePrefix + tokens[1].Trim()) as AudioClip;
 					ambience1Volume = float.Parse(tokens[2].Trim());
@@ -293,7 +291,7 @@ class MapBaseScript extends MonoBehaviour
 			else if (line.StartsWith("Ambience2"))
 			{
 				tokens = line.Split(' '[0]);
-				if (tokens[0].EndsWith(currentTime))
+				if (tokens[0].EndsWith(GameData.instance.current.time))
 				{
 					ambience2 = Resources.Load(resourcePrefix + tokens[1].Trim()) as AudioClip;
 					ambience2Volume = float.Parse(tokens[2].Trim());
@@ -322,7 +320,7 @@ class MapBaseScript extends MonoBehaviour
 				}
                 else if (type.StartsWith("Person"))
                 {
-                    if (type == "Person" || type.EndsWith(currentTime))
+                    if (type == "Person" || type.EndsWith(GameData.instance.current.time))
                     {
                         tokens = val.Split(' '[0]);
                         if (tokens.Length < 3)

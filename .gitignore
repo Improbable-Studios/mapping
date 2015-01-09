@@ -5,6 +5,7 @@ Temp/
 Library/
 Assets/Resources/
 Assets/Resources.meta
+Builds/
 demobuild*
 
 # ===================================== #

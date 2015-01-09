@@ -1,4 +1,4 @@
-//#define USE_SharpZipLib
+#define USE_SharpZipLib
 #if !UNITY_WEBPLAYER
 #define USE_FileIO
 #endif
@@ -61,6 +61,7 @@ namespace SimpleJSON
         FloatValue        = 7,
     }
  
+    [System.Serializable]
     public class JSONNode
     {
         #region common interface
@@ -580,6 +581,7 @@ namespace SimpleJSON
         }
     } // End of JSONNode
  
+    [System.Serializable]
     public class JSONArray : JSONNode, IEnumerable
     {
         private List<JSONNode> m_List = new List<JSONNode>();
@@ -674,6 +676,7 @@ namespace SimpleJSON
         }
     } // End of JSONArray
  
+    [System.Serializable]
     public class JSONClass : JSONNode, IEnumerable
     {
         private Dictionary<string,JSONNode> m_Dict = new Dictionary<string,JSONNode>();
@@ -810,6 +813,7 @@ namespace SimpleJSON
         }
     } // End of JSONClass
  
+    [System.Serializable]
     public class JSONData : JSONNode
     {
         private string m_Data;
