@@ -278,13 +278,13 @@ class RoomScript extends MonoBehaviour
             if (lines.Length > 0)
             {
                 tokens = lines[0].Split(' '[0]);
-                ambience1 = Resources.Load(resourcePrefix + "Music/" + tokens[0].Trim()) as AudioClip;
+                ambience1 = Resources.Load(resourcePrefix + "Ambiance/" + tokens[0].Trim()) as AudioClip;
                 ambience1Volume = float.Parse(tokens[1].Trim());
             }
             if (lines.Length > 1)
             {
                 tokens = lines[1].Split(' '[0]);
-                ambience2 = Resources.Load(resourcePrefix + "Music/" + tokens[0].Trim()) as AudioClip;
+                ambience2 = Resources.Load(resourcePrefix + "Ambiance/" + tokens[0].Trim()) as AudioClip;
                 ambience2Volume = float.Parse(tokens[1].Trim());
             }
         }
