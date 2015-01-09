@@ -735,6 +735,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91100e4bf132d4924892937ecb896151, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sheetKey: 1XPPVCD8M4vhKrrvWl1ggPIT0E53GJum0btz2K4Cfyn0
+  sheetName: Central Database
+  tabName: Locations
 --- !u!114 &934150155
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -770,6 +773,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f524e3fe4a682b54fbd6ea7e4c79fe57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  current:
+    time: Morning
+    location: 221
+    room: Interior/221B/Stairwell
+    coords: F2
+    direction: South
+    confidence: 1
+  saved:
+    list: []
 --- !u!1 &983241284
 GameObject:
   m_ObjectHideFlags: 0

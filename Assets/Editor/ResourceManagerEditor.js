@@ -28,6 +28,7 @@ public class ResourceManagerEditor extends Editor
             f.Close();
             AssetDatabase.Refresh();
             
+            myScript.finishedDownloadLocationsSpreadsheet();
             Debug.Log("DONE: File saved!");
        	}
     }

@@ -154,13 +154,13 @@ class DoorObject extends Object
 class RoomScript extends MonoBehaviour
 {
 	var collisionMask : Texture2D;
-	var text : TextAsset;
 	var bgm : AudioClip;
 	var bgmVolume = 1f;
 	var ambience1 : AudioClip;
 	var ambience1Volume = 1f;
 	var ambience2 : AudioClip;
 	var ambience2Volume = 1f;
+    var config : Dictionary.<String, String>;
 
 	private var path : String;
 
@@ -256,97 +256,81 @@ class RoomScript extends MonoBehaviour
 		if (activeOverlay)
 			activeOverlay.enabled = true;
 
-		if (!text)
+		if (!config)
 		{
-			Debug.LogWarning("No text file found in room: " + path);
+			Debug.LogWarning("Room info not found in Central Database for room: " + path);
 			return;
 		}
 		var resourcePrefix = "audio/";
 
-		var lines = text.text.Split('\n'[0]);
-		for (var l=0; l<lines.GetLength(0); l++)
-		{
-			var line = lines[l].Trim();
-			if (line == "")
-				continue;
+        var cell = config["Music ("+GameData.instance.current.time+")"];
+        if (cell)
+        {
+            var tokens = cell.Split(' '[0]);
+            bgm = Resources.Load(resourcePrefix + "Music/" + tokens[0].Trim()) as AudioClip;
+            bgmVolume = float.Parse(tokens[1].Trim());
+        }
 
-			if (line.StartsWith("BGM"))
-			{
-				var tokens = line.Split(' '[0]);
-				if (tokens[0].EndsWith(GameData.instance.current.time))
-				{
-					bgm = Resources.Load(resourcePrefix + tokens[1].Trim()) as AudioClip;
-					bgmVolume = float.Parse(tokens[2].Trim());
-				}
-			}
-			else if (line.StartsWith("Ambience1"))
-			{
-				tokens = line.Split(' '[0]);
-				if (tokens[0].EndsWith(GameData.instance.current.time))
-				{
-					ambience1 = Resources.Load(resourcePrefix + tokens[1].Trim()) as AudioClip;
-					ambience1Volume = float.Parse(tokens[2].Trim());
-				}
-			}
-			else if (line.StartsWith("Ambience2"))
-			{
-				tokens = line.Split(' '[0]);
-				if (tokens[0].EndsWith(GameData.instance.current.time))
-				{
-					ambience2 = Resources.Load(resourcePrefix + tokens[1].Trim()) as AudioClip;
-					ambience2Volume = float.Parse(tokens[2].Trim());
-				}
-			}
-			else
-			{
-				tokens = line.Split(':'[0]);
-				var nametype = tokens[0].Trim ();
-				var val = tokens[1].Trim();
-				
-				tokens = nametype.Split(' '[0]);
-				var type = tokens[0].Trim();
-				var name = tokens[tokens.GetLength(0)-1].Trim();
+        cell = config["Ambiance ("+GameData.instance.current.time+")"];
+        if (cell)
+        {
+            var lines = cell.Split('\n'[0]);
+            if (lines.Length > 0)
+            {
+                tokens = lines[0].Split(' '[0]);
+                ambience1 = Resources.Load(resourcePrefix + "Music/" + tokens[0].Trim()) as AudioClip;
+                ambience1Volume = float.Parse(tokens[1].Trim());
+            }
+            if (lines.Length > 1)
+            {
+                tokens = lines[1].Split(' '[0]);
+                ambience2 = Resources.Load(resourcePrefix + "Music/" + tokens[0].Trim()) as AudioClip;
+                ambience2Volume = float.Parse(tokens[1].Trim());
+            }
+        }
 
-				if (type == "Exit")
-				{
-					tokens = val.Split('>'[0]);
-					var subtokensA = tokens[0].Trim().Split(' '[0]);
-					var dest = tokens[1].Trim();
-					for (var t=0; t<subtokensA.GetLength(0); t++)
-					{
-						var coords = subtokensA[t].Trim();
-						exits[coords] = name + ' ' + dest;
-					}
-				}
-                else if (type.StartsWith("Person"))
-                {
-                    if (type == "Person" || type.EndsWith(GameData.instance.current.time))
-                    {
-                        tokens = val.Split(' '[0]);
-                        if (tokens.Length < 3)
-                            Debug.LogWarning(path + " Person has incorrect config: " + line);
-                        people[tokens[0]] = name + " " + tokens[1];
-                        peopleAnim[name] = String.Join(" ", tokens[2:]);
-                    }
-                }
-				else
-				{
-					tokens = val.Split(' '[0]);
-					for (t=0; t<tokens.GetLength(0); t++)
-					{
-						coords = tokens[t].Trim();
-						if (type == "Obstacle")
-							obstacles[coords] = name;
-						else if (type == "Object")
-							objects[coords] = name;
-						else if (type == "PreEvent")
-							preevents[coords] = name;
-						else if (type == "PostEvent")
-							postevents[coords] = name;
-					}
-				}
-			}
-		}
+        if (config["Exit Tile"])
+        {
+            var exitTile = config["Exit Tile"].Split('\n'[0]);
+            var exitDest = config["Exit Dest"].Split('\n'[0]);
+            var destTile = config["Dest Tile"].Split('\n'[0]);
+            for (var i=0; i<exitTile.Length; i++)
+            {
+                var name = "Exit" + exitDest[i].Replace("/", "") + destTile[i].Replace("_", "");
+                exits[exitTile[i]] = name + ' ' + exitDest[i] + " " + destTile[i];
+            }
+        }
+
+        if (config["NPC"])
+        {
+            var npc = config["NPC"].Split('\n'[0]);
+            var npcTile = config["NPC Tile"].Split('\n'[0]);
+            var npcSkin = config["NPC Skin"].Split('\n'[0]);
+            var npcAnimation = config["NPC Animation"].Split('\n'[0]);
+            for (i=0; i<npc.Length; i++)
+            {
+                people[npcTile[i]] = npc[i] + " " + npcSkin[i];
+                peopleAnim[npc[i]] = npcAnimation[i];
+            }
+        }
+
+        if (config["Trigger Tile"])
+        {
+            var triggerTile = config["Trigger Tile"].Split('\n'[0]);
+            var triggerType = config["Trigger Type"].Split('\n'[0]);
+            var triggerScript = config["Trigger Script"].Split('\n'[0]);
+            for (i=0; i<triggerTile.Length; i++)
+            {
+                if (triggerType[i] == "Obstacle")
+                    obstacles[triggerTile[i]] = triggerScript[i];
+                else if (triggerType[i] == "Object")
+                    objects[triggerTile[i]] = triggerScript[i];
+                else if (triggerType[i] == "PreEvent")
+                    preevents[triggerTile[i]] = triggerScript[i];
+                else if (triggerType[i] == "PostEvent")
+                    postevents[triggerTile[i]] = triggerScript[i];
+            }
+        }
 		
     	var pnglist = resource.getFilesOfType(path+"/Doors/", ".png");
 	    if (pnglist && pnglist.Length > 0)
@@ -365,7 +349,7 @@ class RoomScript extends MonoBehaviour
                 if (tokens.Length > 1)
                     sfx = tokens[1].Trim().Split();
                 var badCoords = false;
-                for (var i=0; i<subtokens.Length; i++)
+                for (i=0; i<subtokens.Length; i++)
                 {
                     if (!Grid.isValidCoords(subtokens[i]))
                     {

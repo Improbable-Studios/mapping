@@ -73,8 +73,12 @@ class MapManagerScript extends MonoBehaviour
 	    }
 	}
 
-	function loadRoom(roomName : String, resourcePrefix : String, customScriptName : String)
+	function loadRoom(roomName : String)
 	{
+        var roomID = GameData.instance.current.location + "/" + roomName;
+        var resourcePrefix = pathToMaps + "/" + roomID;
+        var customScriptName = "Map" + roomID.Replace("/", ""); 
+
 		var pivot : Vector2 = Vector2(0f, 0f); //top left;
     	var backTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/back") as Texture2D;
     	var frontTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/front") as Texture2D;
@@ -82,7 +86,7 @@ class MapManagerScript extends MonoBehaviour
     	var morningTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/Ambience-Morning") as Texture2D;
     	var afternoonTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/Ambience-Afternoon") as Texture2D;
     	var eveningTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/Ambience-Evening") as Texture2D;
-    	var configText : TextAsset = Resources.Load(resourcePrefix + "/config") as TextAsset;
+    	var config : Dictionary.<String, String> = ResourceManagerScript.locationsTab.getRowDict(roomID);
 		var rect = Rect(0f, backTexture.height, backTexture.width, -backTexture.height);
 		var r = roomsObject.Instantiate(roomPrefab);
 		r.Find("back").GetComponent(SpriteRenderer).sprite = Sprite.Create(backTexture, rect, pivot, 32);
@@ -103,7 +107,7 @@ class MapManagerScript extends MonoBehaviour
 		else
 			script = r.GetComponent(RoomScript);
 		script.collisionMask = collisionTexture;
-		script.text = configText;
+		script.config = config;
 		script.initialise(resourcePrefix);
 		r.SetActive(false);
 		r.transform.parent = roomsObject.transform;
@@ -122,9 +126,7 @@ class MapManagerScript extends MonoBehaviour
 		var newRooms = new Dictionary.<String, GameObject>();
 		for (k in locations[loc].Keys)
 		{
-		    var resourcePrefix = pathToMaps + "/" + GameData.instance.current.location + "/" + k;
-			var customScriptName = "Map" + GameData.instance.current.location + k.Replace("/", "");		
-			newRooms[k] = loadRoom(k, resourcePrefix, customScriptName);
+			newRooms[k] = loadRoom(k);
 		}
 		locations[loc] = newRooms;
 	}

@@ -6,6 +6,10 @@ import System.Runtime.Serialization.Formatters.Binary;
 
 static var instance : ResourceManagerScript;
 
+var sheetKey : String;
+var sheetName : String;
+var tabName : String;
+
 static var passwordHash = "ThePasswordIs";
 static var saltKey = "ImprobableStudios";
 static var viKey = "IsAmazingAwesome";
@@ -133,9 +137,6 @@ function downloadLocationsSpreadsheet()
 
 function downloadLocationsSpreadsheet(f : function())
 {
-    var sheetKey = "1Wf-zRfWngIz_6FzLZmWvTHxRmfFCihEDxgEvcac-PMo";
-    var sheetName = "Central Database";
-    var tabName = "Locations";
     GoogleAPIScript.instance.loadSpreadsheet(sheetKey, [tabName]);
     locationsTab = GoogleAPIScript.instance.openedSheets[sheetName].tabs[tabName];
     f();
@@ -143,9 +144,6 @@ function downloadLocationsSpreadsheet(f : function())
 
 function downloadLocationsSpreadsheetCoroutine(f : function())
 {
-    var sheetKey = "1Wf-zRfWngIz_6FzLZmWvTHxRmfFCihEDxgEvcac-PMo";
-    var sheetName = "Central Database";
-    var tabName = "Locations";
     yield GoogleAPIScript.instance.loadSpreadsheetCoroutine(sheetKey, [tabName]);
     locationsTab = GoogleAPIScript.instance.openedSheets[sheetName].tabs[tabName];
     f();
