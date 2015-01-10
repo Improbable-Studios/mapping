@@ -11,7 +11,8 @@ class MainPlayerScript extends MonoBehaviour
 	private var isKeyUpAfterWalking = true;
 	private var finishedCheckingExits = true;
 
-	private var isChangingRoom = false;
+    private var isChangingLocation = false;
+    private var isChangingRoom = false;
 	private var roomObject : GameObject;
 
 	private var cam : CameraScript;
@@ -20,7 +21,9 @@ class MainPlayerScript extends MonoBehaviour
 	private var mapManager : MapManagerScript;
 	private var sr : SpriteRenderer;
 
-	private var quitMenu : CanvasGroup;
+    private var quitMenu : CanvasGroup;
+    private var londonMenu : CanvasGroup;
+    private var timeBlockText : UI.Text;
 	
 	function Awake()
 	{
@@ -31,23 +34,26 @@ class MainPlayerScript extends MonoBehaviour
 		character = GetComponent(CharacterScript);
 		sr = GetComponent(SpriteRenderer);
 		sr.enabled = false;
-		quitMenu = GameObject.Find("Quit Menu").GetComponent(CanvasGroup);
+        quitMenu = GameObject.Find("Quit Menu").GetComponent(CanvasGroup);
+        londonMenu = GameObject.Find("London Menu").GetComponent(CanvasGroup);
+        timeBlockText = GameObject.Find("Advance Time Text").GetComponent(UI.Text);
 	}
 
 	function Start ()
 	{
-        var location = "221";
-        var room = "Interior/221B/Stairwell";
-        var coords = "F2";
-
 		quitMenu.alpha = 0f;
 		quitMenu.interactable = false;
+        quitMenu.gameObject.SetActive(false);
+        londonMenu.alpha = 0f;
+        londonMenu.interactable = false;
+        londonMenu.gameObject.SetActive(false);
 
         cam.setFollow(gameObject, FollowMode.Smart);
         mapManager = MapManagerScript.instance;
 
-        yield changeLocation(location, room, coords, "South", "Morning", 1f);       
+        yield changeLocation("221", "Interior/221B/Stairwell", "F2", "South", "Morning", 1f);
         yield character.move("South", 4, true);
+//        yield changeLocation("DiogenesClub", "Exterior", "Q14", "North", "Morning", 1f);       
 	}
 
 	function Update ()
@@ -65,7 +71,7 @@ class MainPlayerScript extends MonoBehaviour
 			isKeyUpAfterWalking = true;     
 
 		// Check for active inputs
-		if (!character.moving() && !isChangingRoom && !disableInputs && finishedCheckingExits)
+		if (!character.moving() && !isChangingRoom && !isChangingLocation && !disableInputs && finishedCheckingExits)
 			checkInput();
 	}
 
@@ -87,7 +93,9 @@ class MainPlayerScript extends MonoBehaviour
 		}
 		else if (Input.GetKeyDown(KeyCode.Escape))
 		{
+            disableInputs = true;
 			yield ScreenFaderScript.fadeOut(0.5f, Color.black);
+            quitMenu.gameObject.SetActive(true);
 			quitMenu.alpha = 1f;
 			quitMenu.interactable = true;
 		}
@@ -108,17 +116,114 @@ class MainPlayerScript extends MonoBehaviour
         }
 	}
 
-	function cancelQuit()
+    function saveGame()
+    {
+        GameData.instance.save("1");
+        cancelQuit();
+    }
+
+	function loadGame()
 	{
+        GameData.instance.load("1");
+        var current = GameData.instance.current;
 		quitMenu.alpha = 0f;
 		quitMenu.interactable = false;
-		ScreenFaderScript.fadeIn(0.5f);
+        quitMenu.gameObject.SetActive(false);
+        changeLocation(current.location, current.room, current.coords, current.direction, current.time, 0.2f);
+        disableInputs = false;
 	}
+
+    function cancelQuit()
+    {
+        quitMenu.alpha = 0f;
+        quitMenu.interactable = false;
+        quitMenu.gameObject.SetActive(false);
+        ScreenFaderScript.fadeIn(0.5f);
+        disableInputs = false;
+    }
 
 	function quitGame()
 	{
 		Application.Quit();
 	}
+
+    function updateSpreadsheet()
+    {
+        updateSpreadsheetCoroutine();
+    }
+
+    function updateSpreadsheetCoroutine()
+    {
+        var current = GameData.instance.current;
+        quitMenu.alpha = 0f;
+        quitMenu.interactable = false;
+        quitMenu.gameObject.SetActive(false);
+        yield ResourceManagerScript.instance.downloadLocationsSpreadsheetCoroutine();
+        changeLocation(current.location, current.room, current.coords, current.direction, current.time, 1f);
+        disableInputs = false;
+    }
+
+    function cancelLondon()
+    {
+        londonMenu.alpha = 0f;
+        londonMenu.interactable = false;
+        londonMenu.gameObject.SetActive(false);
+        ScreenFaderScript.fadeIn(0.5f);
+        disableInputs = false;
+    }
+
+    function advanceTime()
+    {
+        var current = GameData.instance.current;
+        var times = ["Morning", "Afternoon", "Evening"];
+        var newTime = times[0];
+        for (var i=0; i<times.Length-1; i++)
+        {
+            if (GameData.instance.current.time == times[i])
+            {
+                newTime = times[i+1];
+                break;
+            }
+        }
+        londonMenu.alpha = 0f;
+        londonMenu.interactable = false;
+        londonMenu.gameObject.SetActive(false);
+        changeLocation(current.location, current.room, current.coords, current.direction, newTime, 1f);
+        disableInputs = false;
+    }
+
+    function goToLocation(location : String)
+    {
+        if (location in MapManagerScript.instance.entrees)
+        {
+            var tokens = MapManagerScript.instance.entrees[location].Split('_'[0]);
+            londonMenu.alpha = 0f;
+            londonMenu.interactable = false;
+            londonMenu.gameObject.SetActive(false);
+            changeLocation(location, "Exterior", tokens[0], tokens[1], GameData.instance.current.time, 1f);
+            disableInputs = false;
+        }
+        else
+        {
+            Debug.LogError("Cannot go to non-existent location: " + location);
+            cancelLondon();
+        }
+    }
+
+    function goToNextLocation()
+    {
+        var locations = List.<String>(MapManagerScript.instance.entrees.Keys);
+        var location = locations[0];
+        for (var i=0; i<locations.Count-1; i++)
+        {
+            if (GameData.instance.current.location == locations[i])
+            {
+                location = locations[i+1];
+                break;
+            }
+        }
+        goToLocation(location);
+    }
 
 	function move(direction : String)
 	{
@@ -149,9 +254,21 @@ class MainPlayerScript extends MonoBehaviour
 			if (success == true)
 			{
 				var subtokens = tokens[2].Split('_'[0]);
-				yield changeRoom(tokens[1], subtokens[0]);
-				if (subtokens.Length == 2)
-					yield character.move(subtokens[1], true);
+                if (tokens[1] == "London")
+                {
+                    disableInputs = true;
+                    yield ScreenFaderScript.fadeOut(0.5f, Color.black);
+                    timeBlockText.text = GameData.instance.current.time + " now. Advance time.";
+                    londonMenu.alpha = 1f;
+                    londonMenu.interactable = true;
+                    londonMenu.gameObject.SetActive(true);
+                }
+                else
+                {
+    				yield changeRoom(tokens[1], subtokens[0]);
+    				if (subtokens.Length == 2)
+    					yield character.move(subtokens[1], true);
+                }
 			}
 		}
 	}
@@ -170,6 +287,7 @@ class MainPlayerScript extends MonoBehaviour
 
     function changeLocation(location : String, room : String, coords : String, direction : String, time : String, fade : float)
     {
+        isChangingLocation = true;
         yield ScreenFaderScript.fadeOut(fade, Color.black);
 
         GameData.instance.current.time = time;
@@ -179,9 +297,10 @@ class MainPlayerScript extends MonoBehaviour
 
         yield changeRoom(room, coords);
         character.changeDirection(direction);
-        yield WaitForSeconds(fade);
+//        yield WaitForSeconds(fade);
 
         ScreenFaderScript.fadeIn(fade, Color.black);
+        isChangingLocation = false;
     }
 
 	function changeRoom(room : String, coords : String)

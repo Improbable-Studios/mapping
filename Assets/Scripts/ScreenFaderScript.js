@@ -4,6 +4,8 @@ static private var instance : ScreenFaderScript;
 static private var targetColor : Color;
 static private var deltaColor : Color;
 
+static private var isRunning : boolean;
+
 function Awake ()
 {
     instance = this;
@@ -12,6 +14,7 @@ function Awake ()
     guiTexture.enabled = false;
 	guiTexture.color = new Color(targetColor.r, targetColor.g, targetColor.b, 0);
     guiTexture.pixelInset = new Rect(0f, 0f, Screen.width, Screen.height);
+    isRunning = false;
 }
 
 static function fadeIn(fadeDuration : float)
@@ -21,7 +24,8 @@ static function fadeIn(fadeDuration : float)
 
 static function fadeIn(fadeDuration : float, targetColor_ : Color)
 {
-	instance.StopAllCoroutines();
+    while (isRunning)
+        yield;
 	targetColor = new Color(targetColor_.r, targetColor_.g, targetColor_.b, 0f);
 
 	if (fadeDuration <= 0.0f)		
@@ -32,12 +36,14 @@ static function fadeIn(fadeDuration : float, targetColor_ : Color)
 	{
 		deltaColor = (targetColor - instance.guiTexture.color) / fadeDuration;
 	
+        isRunning = true;
 		while (Mathf.Abs(instance.guiTexture.color.a - targetColor.a) > Mathf.Abs(deltaColor.a) * Time.deltaTime)
 		{
 			instance.guiTexture.color += deltaColor * Time.deltaTime;
 			yield;
 		}
 		instance.guiTexture.enabled = false;
+        isRunning = false;
 	}
 }
 
@@ -48,7 +54,8 @@ static function fadeOut(fadeDuration : float)
 
 static function fadeOut(fadeDuration : float, targetColor_ : Color)
 {
-	instance.StopAllCoroutines();
+    while (isRunning)
+        yield;
 	targetColor = new Color(targetColor_.r, targetColor_.g, targetColor_.b, 0.5f);
 
 	if (fadeDuration <= 0.0f)		
@@ -61,11 +68,13 @@ static function fadeOut(fadeDuration : float, targetColor_ : Color)
 		instance.guiTexture.enabled = true;
 		deltaColor = (targetColor - instance.guiTexture.color) / fadeDuration;
 	
+        isRunning = true;
 		while (Mathf.Abs(instance.guiTexture.color.a - targetColor.a) > Mathf.Abs(deltaColor.a) * Time.deltaTime)
 		{
 			instance.guiTexture.color += deltaColor * Time.deltaTime;
 			yield;
 		}
 		instance.guiTexture.color = targetColor;
+        isRunning = false;
 	}
 }

@@ -258,34 +258,48 @@ class RoomScript extends MonoBehaviour
 
 		if (!config)
 		{
-			Debug.LogWarning("Room info not found in Central Database for room: " + path);
+			Debug.LogWarning("Room info not found in Central Database for: " + path);
 			return;
 		}
 		var resourcePrefix = "audio/";
 
-        var cell = config["Music ("+GameData.instance.current.time+")"];
-        if (cell)
+        if (config["Music"])
         {
-            var tokens = cell.Split(' '[0]);
-            bgm = Resources.Load(resourcePrefix + "Music/" + tokens[0].Trim()) as AudioClip;
-            bgmVolume = float.Parse(tokens[1].Trim());
+            var music = config["Music"].Split('\n'[0]);
+            var musicTime = config["Music Time"].Split('\n'[0]);
+            var musicVolume = config["Music Volume"].Split('\n'[0]);
+            for (var i=0; i<music.Length; i++)
+            {
+                if (musicTime[i] != GameData.instance.current.time)
+                    continue;
+                bgm = Resources.Load(resourcePrefix + "Music/" + music[i]) as AudioClip;
+                bgmVolume = float.Parse(musicVolume[i]);
+            }
         }
 
-        cell = config["Ambiance ("+GameData.instance.current.time+")"];
-        if (cell)
+        if (config["Ambiance"])
         {
-            var lines = cell.Split('\n'[0]);
-            if (lines.Length > 0)
+            var ambiance = config["Ambiance"].Split('\n'[0]);
+            var ambianceTime = config["Ambiance Time"].Split('\n'[0]);
+            var ambianceVolume = config["Ambiance Volume"].Split('\n'[0]);
+            var ambianceCounter = 1;
+            for (i=0; i<ambiance.Length; i++)
             {
-                tokens = lines[0].Split(' '[0]);
-                ambience1 = Resources.Load(resourcePrefix + "Ambiance/" + tokens[0].Trim()) as AudioClip;
-                ambience1Volume = float.Parse(tokens[1].Trim());
-            }
-            if (lines.Length > 1)
-            {
-                tokens = lines[1].Split(' '[0]);
-                ambience2 = Resources.Load(resourcePrefix + "Ambiance/" + tokens[0].Trim()) as AudioClip;
-                ambience2Volume = float.Parse(tokens[1].Trim());
+                if (ambianceTime[i] != GameData.instance.current.time)
+                    continue;
+                if (ambianceCounter == 1)
+                {
+                    ambience1 = Resources.Load(resourcePrefix + "Ambiance/" + ambiance[i]) as AudioClip;
+                    ambience1Volume = float.Parse(ambianceVolume[i]);
+                }
+                else if (ambianceCounter == 2)
+                {
+                    ambience2 = Resources.Load(resourcePrefix + "Ambiance/" + ambiance[i]) as AudioClip;
+                    ambience2Volume = float.Parse(ambianceVolume[i]);
+                }
+                else
+                    Debug.LogWarning("Exceeded current limit (2) for Ambiance sounds for: " + path);
+                ambianceCounter++;
             }
         }
 
@@ -294,7 +308,7 @@ class RoomScript extends MonoBehaviour
             var exitTile = config["Exit Tile"].Split('\n'[0]);
             var exitDest = config["Exit Dest"].Split('\n'[0]);
             var destTile = config["Dest Tile"].Split('\n'[0]);
-            for (var i=0; i<exitTile.Length; i++)
+            for (i=0; i<exitTile.Length; i++)
             {
                 var name = "Exit" + exitDest[i].Replace("/", "") + destTile[i].Replace("_", "");
                 exits[exitTile[i]] = name + ' ' + exitDest[i] + " " + destTile[i];
@@ -304,11 +318,14 @@ class RoomScript extends MonoBehaviour
         if (config["NPC"])
         {
             var npc = config["NPC"].Split('\n'[0]);
+            var npcTime = config["NPC Time"].Split('\n'[0]);
             var npcTile = config["NPC Tile"].Split('\n'[0]);
             var npcSkin = config["NPC Skin"].Split('\n'[0]);
             var npcAnimation = config["NPC Animation"].Split('\n'[0]);
             for (i=0; i<npc.Length; i++)
             {
+                if (npcTime[i] != GameData.instance.current.time)
+                    continue;
                 people[npcTile[i]] = npc[i] + " " + npcSkin[i];
                 peopleAnim[npc[i]] = npcAnimation[i];
             }
@@ -343,7 +360,7 @@ class RoomScript extends MonoBehaviour
                 d.transform.parent = transform;
                 d.name = "Door " + k;
                 var sr : SpriteRenderer = d.GetComponent(SpriteRenderer) as SpriteRenderer;
-                tokens = k.Split('-'[0]);
+                var tokens = k.Split('-'[0]);
                 var subtokens = tokens[0].Trim().Split('_'[0]);
                 var sfx : String[] = null;
                 if (tokens.Length > 1)

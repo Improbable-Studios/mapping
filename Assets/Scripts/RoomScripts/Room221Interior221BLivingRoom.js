@@ -1,6 +1,6 @@
 ﻿#pragma strict
 
-class Map221Interior221BLivingRoom extends RoomScript
+class Room221Interior221BLivingRoom extends RoomScript
 {
 	var tvAudio : AudioClip;
 

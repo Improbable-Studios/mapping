@@ -81,6 +81,8 @@ static function getCoordsDirectional(pos : Vector3, direction : String) : String
 
 static function isValidCoords(coords : String) : boolean
 {
+    if (coords.Length < 2)
+        return false;
     var x : int = coords[0];
     var a : int = 'A'[0];
     x -= a;

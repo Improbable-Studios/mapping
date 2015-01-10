@@ -23,10 +23,8 @@ class MapManagerScript extends MonoBehaviour
 
     var locations = Dictionary.<String, Dictionary.<String, GameObject> >();
     var characters = Dictionary.<String, GameObject>();
-	
-//	var currentLocation = "221"; // HACK: Need to move to global state manager
-//	var currentRoom = "Interior/221B/Stairwell"; // HACK: Need to move to global state manager
-	
+    var entrees = Dictionary.<String, String>();
+
 	private var resource : ResourceManagerScript;
 
 	function Awake ()
@@ -37,6 +35,19 @@ class MapManagerScript extends MonoBehaviour
 	    {
 	    	locations[dir] = new Dictionary.<String, GameObject>();
 	    	recursiveInitRooms(dir, "");
+            var row = resource.locationsTab.getRowDict(dir + "/Exterior");
+            if (row)
+            {
+                var exitDest = row["Exit Dest"].Split('\n'[0]);
+                var destTile = row["Dest Tile"].Split('\n'[0]);
+                for (var i=0; i<exitDest.Length; i++)
+                {
+                    if (exitDest[i] == "London")
+                        entrees[dir] = destTile[i];
+                }
+            }
+//            if (dir in entrees)
+//                Debug.Log(dir + " -- " + entrees[dir]);
 //	    	Debug.Log("LOCATION: " + dir + " " + locations[dir].Count + " rooms");
 	    }
         roomsObject = GameObject.Find("Rooms");
@@ -77,7 +88,7 @@ class MapManagerScript extends MonoBehaviour
 	{
         var roomID = GameData.instance.current.location + "/" + roomName;
         var resourcePrefix = pathToMaps + "/" + roomID;
-        var customScriptName = "Map" + roomID.Replace("/", ""); 
+        var customScriptName = "Room" + roomID.Replace("/", ""); 
 
 		var pivot : Vector2 = Vector2(0f, 0f); //top left;
     	var backTexture : Texture2D = Resources.Load(resourcePrefix + "/Layers/back") as Texture2D;
@@ -167,7 +178,10 @@ class MapManagerScript extends MonoBehaviour
 
 	function getRoomObject(room : String)
 	{
-		return locations[GameData.instance.current.location][room];
+        if (isRoomExist(room))
+    		return locations[GameData.instance.current.location][room];
+        else
+            Debug.LogError("Cannot get non-existant room: " + room);
 	}
 
     function loadCharacter(name : String, coords : String, skin : String, animation : String)

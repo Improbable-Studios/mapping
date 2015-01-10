@@ -142,6 +142,11 @@ function downloadLocationsSpreadsheet(f : function())
     f();
 }
 
+function downloadLocationsSpreadsheetCoroutine()
+{
+    return downloadLocationsSpreadsheetCoroutine(function(){});
+}
+
 function downloadLocationsSpreadsheetCoroutine(f : function())
 {
     yield GoogleAPIScript.instance.loadSpreadsheetCoroutine(sheetKey, [tabName]);
