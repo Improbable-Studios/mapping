@@ -39,6 +39,20 @@ class CharacterScript extends MonoBehaviour
 		updateCamera();
 	}
 
+    function OnDisable()
+    {
+        setVisible(false);
+        if (anim && anim.isRunning())
+        {
+            animScript.StartCoroutine(anim.stop());
+        }
+    }
+
+    function OnDestroy()
+    {
+        anim.onCharacterDestroy();
+    }
+
     function getCoords()
     {
         return Grid.getCoords(transform.position);
@@ -118,16 +132,6 @@ class CharacterScript extends MonoBehaviour
             StartCoroutine(anim.run(tokens[0], tokens[1:]));
         }
         sr.enabled = true;
-    }
-
-    function disable()
-    {
-        sr.enabled = false;
-        if (anim && anim.isRunning())
-        {
-            StartCoroutine(anim.stop());
-        }
-        gameObject.SetActive(false);
     }
 
 	function initAnim()

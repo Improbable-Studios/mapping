@@ -7,6 +7,7 @@ var fadeIn = true;
 
 private var sound : AudioSource;
 private var volume : float;
+private var minDiff = 0.4;
 
 function Awake()
 {
@@ -47,9 +48,13 @@ function doFadeToVolume(vol : float, speed : float)
 	StopCoroutine("doFadeToVolume");
 
 	var diff : float;
+    if (vol > 0f && !isPlaying())
+        sound.audio.Play();
 	if (sound.audio.volume < vol)
 	{
-		diff = vol - sound.audio.volume;
+        diff = vol - sound.audio.volume;
+        if (diff < minDiff)
+            diff = minDiff;
 		while (sound.audio.volume < vol)
 		{
 			sound.audio.volume += Time.deltaTime * diff * speed;
@@ -58,14 +63,18 @@ function doFadeToVolume(vol : float, speed : float)
 	}
 	else
 	{
-		diff = sound.audio.volume - vol;
-		while (sound.audio.volume > vol)
+        diff = sound.audio.volume - vol;
+        if (diff < minDiff)
+            diff = minDiff;
+   	    while (sound.audio.volume > vol)
 		{
 			sound.audio.volume -= Time.deltaTime * diff * speed;
 			yield;
 		}
 	}
 	sound.audio.volume = vol;
+    if (vol == 0f && isPlaying())
+        stopPlaying();
 
 	yield;
 }
@@ -116,10 +125,18 @@ function changeClip(clip : AudioClip, vol : float)
 
 function isPlaying()
 {
+    if (!sound)
+        return false;
 	return sound.isPlaying;
 }
 
 function stopPlaying()
 {
 	sound.audio.Stop();
+}
+
+function waitTillFinished()
+{
+    while (isPlaying())
+        yield;
 }

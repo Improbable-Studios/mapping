@@ -10,19 +10,18 @@ class MapManagerScript extends MonoBehaviour
     static var instance : MapManagerScript;
     static var roomsObject : GameObject;
     static var charactersObject : GameObject;
-    static var audioObject : GameObject;
     static var shaderOutput : GameObject;
     static var shaderCamera : GameObject;
     static var roomPrefab : GameObject;
     static var characterPrefab : GameObject;
     static var doorPrefab : GameObject;
-    static var sfxPrefab : GameObject;
     
 	var pathToMaps = "maps";
 	var preLoadAllMaps = true;
 
     var locations = Dictionary.<String, Dictionary.<String, GameObject> >();
     var characters = Dictionary.<String, GameObject>();
+    var characterScripts = Dictionary.<String, CharacterScript>();
     var entrees = Dictionary.<String, String>();
 
 	private var resource : ResourceManagerScript;
@@ -52,13 +51,11 @@ class MapManagerScript extends MonoBehaviour
 	    }
         roomsObject = GameObject.Find("Rooms");
         charactersObject = GameObject.Find("Characters");
-        audioObject = GameObject.Find("Audio");
         shaderOutput = GameObject.Find("Shader Output");
         shaderCamera = GameObject.Find("Shader Cameras");
         characterPrefab = Resources.Load("CharacterPrefab") as GameObject;
         roomPrefab = Resources.Load("RoomPreFab") as GameObject;
         doorPrefab = Resources.Load("DoorPrefab") as GameObject;
-        sfxPrefab = Resources.Load("SFXPrefab") as GameObject;
     }
 
 	function Start ()
@@ -100,14 +97,14 @@ class MapManagerScript extends MonoBehaviour
     	var config : Dictionary.<String, String> = ResourceManagerScript.locationsTab.getRowDict(roomID);
 		var rect = Rect(0f, backTexture.height, backTexture.width, -backTexture.height);
 		var r = roomsObject.Instantiate(roomPrefab);
-		r.Find("back").GetComponent(SpriteRenderer).sprite = Sprite.Create(backTexture, rect, pivot, 32);
-		r.Find("front").GetComponent(SpriteRenderer).sprite = Sprite.Create(frontTexture, rect, pivot, 32);
+		r.transform.Find("back").GetComponent(SpriteRenderer).sprite = Sprite.Create(backTexture, rect, pivot, 32);
+		r.transform.Find("front").GetComponent(SpriteRenderer).sprite = Sprite.Create(frontTexture, rect, pivot, 32);
 		if (morningTexture)
-			r.Find("Ambience-Morning").GetComponent(SpriteRenderer).sprite = Sprite.Create(morningTexture, rect, pivot, 32);
+			r.transform.Find("Ambience-Morning").GetComponent(SpriteRenderer).sprite = Sprite.Create(morningTexture, rect, pivot, 32);
 		if (afternoonTexture)
-			r.Find("Ambience-Afternoon").GetComponent(SpriteRenderer).sprite = Sprite.Create(afternoonTexture, rect, pivot, 32);
+			r.transform.Find("Ambience-Afternoon").GetComponent(SpriteRenderer).sprite = Sprite.Create(afternoonTexture, rect, pivot, 32);
 		if (eveningTexture)
-			r.Find("Ambience-Evening").GetComponent(SpriteRenderer).sprite = Sprite.Create(eveningTexture, rect, pivot, 32);
+			r.transform.Find("Ambience-Evening").GetComponent(SpriteRenderer).sprite = Sprite.Create(eveningTexture, rect, pivot, 32);
 
 		if (System.Type.GetType(customScriptName))
 		{
@@ -131,15 +128,18 @@ class MapManagerScript extends MonoBehaviour
 		var childs : int = roomsObject.transform.childCount;
 		for (var i = childs - 1; i >= 0; i--)
 			GameObject.DestroyImmediate(roomsObject.transform.GetChild(i).gameObject);
+        AudioManagerScript.instance.onLocationLeave();
 		GameData.instance.current.location = loc;
 
-		var pivot : Vector2 = Vector2(0f, 0f); //top left;
-		var newRooms = new Dictionary.<String, GameObject>();
-		for (k in locations[loc].Keys)
-		{
-			newRooms[k] = loadRoom(k);
-		}
-		locations[loc] = newRooms;
+        if (preLoadAllMaps)
+        {
+    		var newRooms = new Dictionary.<String, GameObject>();
+    		for (k in locations[loc].Keys)
+    		{
+    			newRooms[k] = loadRoom(k);
+    		}
+    		locations[loc] = newRooms;
+        }
 	}
 
 	function listOfLocations()
@@ -179,24 +179,39 @@ class MapManagerScript extends MonoBehaviour
 	function getRoomObject(room : String)
 	{
         if (isRoomExist(room))
-    		return locations[GameData.instance.current.location][room];
+        {
+    		var obj = locations[GameData.instance.current.location][room];
+            if (obj == null)
+                locations[GameData.instance.current.location][room] = loadRoom(room);
+            return locations[GameData.instance.current.location][room];
+        }
         else
             Debug.LogError("Cannot get non-existant room: " + room);
 	}
 
+    function onLeaveRoom(roomObj : GameObject)
+    {
+        if (!preLoadAllMaps)
+            Destroy(roomObj);
+    }
+
     function loadCharacter(name : String, coords : String, skin : String, animation : String)
     {
         if (characters.ContainsKey(name))
-            var c : GameObject = characters[name] as GameObject;
+        {
+            var c : GameObject = characters[name];
+            var cs : CharacterScript = characterScripts[name];
+        }
         else
         {
             c = charactersObject.Instantiate(characterPrefab);
             c.transform.parent = charactersObject.transform;
             c.name = name;
+            cs = c.GetComponent(CharacterScript) as CharacterScript;
             characters[name] = c;
+            characterScripts[name] = cs;
         }
         c.SetActive(true);
-        var cs : CharacterScript = c.GetComponent(CharacterScript) as CharacterScript;
         cs.setCharacter(name, coords, skin, animation);
         cs.setVisible(true);
         return cs;
@@ -205,17 +220,35 @@ class MapManagerScript extends MonoBehaviour
     function getCharacterObject(name : String)
     {
         if (characters.ContainsKey(name))
-            return characters[name] as GameObject;
+            return characters[name];
         else
             return null;
     }
-    
+
+    function getCharacterScript(name : String)
+    {
+        if (characterScripts.ContainsKey(name))
+            return characterScripts[name];
+        else
+            return null;
+    }
+
     function disableCharacters()
     {
-        for (var c in characters.Values)
+        if (preLoadAllMaps)
         {
-            var cs : CharacterScript = c.GetComponent(CharacterScript) as CharacterScript;
-            cs.disable();
+            for (var c in characters.Values)
+                c.SetActive(false);
+        }
+        else
+        {
+             for (k in List.<String>(characters.Keys))
+             {
+                var c = characters[k];
+                characters.Remove(k);
+                characterScripts.Remove(k);
+                Destroy(c);
+             }
         }
     }
 }

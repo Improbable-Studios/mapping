@@ -2,7 +2,7 @@
 
 class Room221Interior221BLivingRoom extends RoomScript
 {
-	var tvAudio : AudioClip;
+    var tvAudio : String;
 
 	private var player : MainPlayerScript;
 	private var character : CharacterScript;
@@ -11,15 +11,12 @@ class Room221Interior221BLivingRoom extends RoomScript
 	{
 		player = GameObject.Find("Player").GetComponent(MainPlayerScript);
 		character = GameObject.Find("Player").GetComponent(CharacterScript);
-		tvAudio = Resources.Load("audio/Ambiance/TV/Baseball") as AudioClip;
+		tvAudio = "Ambiance/TV/Baseball";
 		super.Awake();
 	}
 
 	function TV()
 	{
-		if (ambience2script.isPlaying())
-			ambience2script.changeClip(null, 1.0f, true);
-		else
-			ambience2script.changeClip(tvAudio, 1.0f, true);
+		AudioManagerScript.instance.toggleAmbiance("TV", tvAudio, 1f, true);
 	}
 }

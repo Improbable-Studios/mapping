@@ -11,19 +11,19 @@ class DoorObject extends Object
     var type : AnimType;
     var state : String; // "Opened" or "Closed"
 
+    var name : String;
     var speed = 3.0;
-    var defaultSFXPrefix = "audio/SFX/Entrances/";
-    var openClip :AudioClip;
-    var closeClip :AudioClip;
-    var sfxScript :AudioScript;
-    var sfxObject : GameObject;
+    var openSFX : String;
+    var closeSFX : String;
     var openSFXFromStart : boolean;
     var closeSFXFromStart : boolean;
+    var defaultSFXPrefix = "SFX/Entrances/";
     
     function DoorObject(room_ : RoomScript, gameObject_ : GameObject, sr_ : SpriteRenderer, anim_ : AnimationItem, coords : String, sfx : String[])
     {
         room = room_;
         gameObject = gameObject_;
+        name = room.getPath() + " - " + gameObject.name;
         sr = sr_;
         anim = anim_;
         type = anim.type;
@@ -36,27 +36,16 @@ class DoorObject extends Object
         if (sfx && sfx.Length == 2)
         {
             var tokens = sfx[0].Split('_'[0]);
-            var openPath = tokens[0];
+            openSFX = defaultSFXPrefix + tokens[0];
             openSFXFromStart = true;
             if (tokens.Length == 2)
                 openSFXFromStart = tokens[1] == "Begin";
-            if (!openPath.Contains('/'))
-                openPath = defaultSFXPrefix + openPath;
-            openClip = Resources.Load(openPath) as AudioClip;
 
             tokens = sfx[1].Split('_'[0]);
-            var closePath = tokens[0];
+            closeSFX = defaultSFXPrefix + tokens[0];
             closeSFXFromStart = false;
             if (tokens.Length == 2)
                 closeSFXFromStart = tokens[1] == "Begin";
-            if (!closePath.Contains('/'))
-                closePath = defaultSFXPrefix + closePath;
-            closeClip = Resources.Load(closePath) as AudioClip;
-            
-            sfxObject = gameObject.Instantiate(MapManagerScript.sfxPrefab);
-            sfxObject.transform.parent = MapManagerScript.audioObject.transform;
-            sfxObject.name = gameObject.name + "_SFX";
-            sfxScript = sfxObject.GetComponent(AudioScript);
         }
         else if (sfx && sfx.Length != 0)
             Debug.LogWarning("Door SFX not set correctly: " + gameObject.name + " in " + room.getPath());
@@ -103,12 +92,12 @@ class DoorObject extends Object
         }
         if (speedModifier > 0f && state == "Closed")
         {
-            if (sfxScript && openClip && openSFXFromStart)
-                sfxScript.StartCoroutine(sfxScript.changeClip(openClip, 1f, true, true));
+            if (openSFX != "" && openSFXFromStart)
+                AudioManagerScript.instance.playSFX(name, openSFX, 1f);
             room.lastDoorOpened = this;
             yield room.StartCoroutine(anim.run(sr, speed * speedModifier, ["Start"]));
-            if (sfxScript && openClip && !openSFXFromStart && state == "Closed")
-                sfxScript.StartCoroutine(sfxScript.changeClip(openClip, 1f, true, true));
+            if (openSFX != "" && !openSFXFromStart && state == "Closed")
+                AudioManagerScript.instance.playSFX(name, openSFX, 1f);
         }
         setLayerOrder("Opened");
         state = "Opened";
@@ -139,12 +128,12 @@ class DoorObject extends Object
         setLayerOrder("Closed");
         if (speedModifier > 0f && state == "Opened")
         {
-            if (sfxScript && closeClip && closeSFXFromStart)
-                sfxScript.StartCoroutine(sfxScript.changeClip(closeClip, 1f, true, true));
+            if (closeSFX != "" && closeSFXFromStart)
+                AudioManagerScript.instance.playSFX(name, closeSFX, 1f);
             room.lastDoorClosed = this;
             yield room.StartCoroutine(anim.run(sr, speed * speedModifier, ["Stop"]));
-            if (sfxScript && closeClip && !closeSFXFromStart && state == "Opened")
-                sfxScript.StartCoroutine(sfxScript.changeClip(closeClip, 1f, true, true));
+            if (closeSFX != "" && !closeSFXFromStart && state == "Opened")
+                AudioManagerScript.instance.playSFX(name, closeSFX, 1f);
         }
         state = "Closed";
         yield;
@@ -154,12 +143,10 @@ class DoorObject extends Object
 class RoomScript extends MonoBehaviour
 {
 	var collisionMask : Texture2D;
-	var bgm : AudioClip;
-	var bgmVolume = 1f;
-	var ambience1 : AudioClip;
-	var ambience1Volume = 1f;
-	var ambience2 : AudioClip;
-	var ambience2Volume = 1f;
+	var bgm : String;
+	var bgmVolume : float;
+	var ambianceNames : String[];
+	var ambianceVolumes : float[];
     var config : Dictionary.<String, String>;
 
 	private var path : String;
@@ -183,12 +170,6 @@ class RoomScript extends MonoBehaviour
 
     var lastDoorOpened : DoorObject;
     var lastDoorClosed : DoorObject;
-	var bgmplayer : AudioSource;
-	var bgmscript : AudioScript;
-	var ambience1player : AudioSource;
-	var ambience1script : AudioScript;
-	var ambience2player : AudioSource;
-	var ambience2script : AudioScript;
 
 	function Awake()
 	{
@@ -197,7 +178,7 @@ class RoomScript extends MonoBehaviour
 	function OnEnable()
 	{
         // Check that script is loaded, and play the room sounds
-		if (bgmscript == null)
+		if (collisionMask == null)
 			return;
         playBGM();
 
@@ -211,16 +192,8 @@ class RoomScript extends MonoBehaviour
             CameraScript.instance.setZoom(1.0);
         else
             CameraScript.instance.setZoom(2.0);
-
-        // Ensure the last opened door in this map is closed
-		if (lastDoorOpened && lastDoorOpened.gameObject)
-        {
-			lastDoorOpened.closeDoorInstant();
-            lastDoorOpened = null;
-        }
         
         // Activate the right NPCs in this room
-        manager.disableCharacters();
         for (var k in people.Keys)
         {
             var nameAndSkin = people[k].Split();
@@ -228,21 +201,34 @@ class RoomScript extends MonoBehaviour
         }
 	}
 
+    function OnDisable()
+    {
+        if (collisionMask == null)
+            return;
+
+        CameraScript.instance.setOverlayBlending(false);
+
+        if (lastDoorOpened && lastDoorOpened.gameObject)
+        {
+            lastDoorOpened.closeDoorInstant();
+            lastDoorOpened = null;
+        }
+        
+        manager.disableCharacters();
+        AudioManagerScript.instance.onRoomLeave();
+    }
+
 	function initialise(path_ : String)
 	{
 		path = path_;
         resource = ResourceManagerScript.instance;
         manager = MapManagerScript.instance;
 
-		bgmplayer = GameObject.Find("Background Music").GetComponent(AudioSource);
-		bgmscript = GameObject.Find("Background Music").GetComponent(AudioScript);
-		ambience1player = GameObject.Find("Ambience 1").GetComponent(AudioSource);
-		ambience1script = GameObject.Find("Ambience 1").GetComponent(AudioScript);
-		ambience2player = GameObject.Find("Ambience 2").GetComponent(AudioSource);
-		ambience2script = GameObject.Find("Ambience 2").GetComponent(AudioScript);
-		morning = gameObject.Find("Ambience-Morning").GetComponent(SpriteRenderer) as SpriteRenderer;
-		afternoon = gameObject.Find("Ambience-Afternoon").GetComponent(SpriteRenderer) as SpriteRenderer;
-		evening = gameObject.Find("Ambience-Evening").GetComponent(SpriteRenderer) as SpriteRenderer;
+        bgm = "";
+        bgmVolume = 1f;
+		morning = transform.Find("Ambience-Morning").GetComponent(SpriteRenderer) as SpriteRenderer;
+		afternoon = transform.Find("Ambience-Afternoon").GetComponent(SpriteRenderer) as SpriteRenderer;
+		evening = transform.Find("Ambience-Evening").GetComponent(SpriteRenderer) as SpriteRenderer;
 		morning.enabled = false;
 		afternoon.enabled = false;
 		evening.enabled = false;
@@ -272,7 +258,7 @@ class RoomScript extends MonoBehaviour
             {
                 if (musicTime[i] != GameData.instance.current.time)
                     continue;
-                bgm = Resources.Load(resourcePrefix + "Music/" + music[i]) as AudioClip;
+                bgm = "Music/" + music[i];
                 bgmVolume = float.Parse(musicVolume[i]);
             }
         }
@@ -282,24 +268,23 @@ class RoomScript extends MonoBehaviour
             var ambiance = config["Ambiance"].Split('\n'[0]);
             var ambianceTime = config["Ambiance Time"].Split('\n'[0]);
             var ambianceVolume = config["Ambiance Volume"].Split('\n'[0]);
-            var ambianceCounter = 1;
+            var ambianceCounter = 0;
             for (i=0; i<ambiance.Length; i++)
             {
-                if (ambianceTime[i] != GameData.instance.current.time)
-                    continue;
-                if (ambianceCounter == 1)
+                if (ambianceTime[i] == GameData.instance.current.time)
+                    ambianceCounter++;
+            }
+            ambianceNames = new String[ambianceCounter];
+            ambianceVolumes = new float[ambianceCounter];
+            ambianceCounter = 0;
+            for (i=0; i<ambiance.Length; i++)
+            {
+                if (ambianceTime[i] == GameData.instance.current.time)
                 {
-                    ambience1 = Resources.Load(resourcePrefix + "Ambiance/" + ambiance[i]) as AudioClip;
-                    ambience1Volume = float.Parse(ambianceVolume[i]);
+                    ambianceNames[ambianceCounter] = "Ambiance/" + ambiance[i];
+                    ambianceVolumes[ambianceCounter] = float.Parse(ambianceVolume[i]);
+                    ambianceCounter++;
                 }
-                else if (ambianceCounter == 2)
-                {
-                    ambience2 = Resources.Load(resourcePrefix + "Ambiance/" + ambiance[i]) as AudioClip;
-                    ambience2Volume = float.Parse(ambianceVolume[i]);
-                }
-                else
-                    Debug.LogWarning("Exceeded current limit (2) for Ambiance sounds for: " + path);
-                ambianceCounter++;
             }
         }
 
@@ -395,9 +380,8 @@ class RoomScript extends MonoBehaviour
 
 	function playBGM()
 	{
-		bgmscript.changeClip(bgm, bgmVolume);
-		ambience1script.changeClip(ambience1, ambience1Volume);
-		ambience2script.changeClip(ambience2, ambience2Volume);
+        AudioManagerScript.instance.playBGM(bgm, bgmVolume);
+        AudioManagerScript.instance.playAmbiances(ambianceNames, ambianceVolumes);        
 	}
 
 	function isWalkable(pos : Vector3, direction : String) : boolean

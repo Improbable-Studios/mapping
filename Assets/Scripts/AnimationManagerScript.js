@@ -632,6 +632,8 @@ class AnimatedObject extends Object
 			Debug.LogWarning("No such skin for character -- " + skinName + " -- " + name);
 			return;
 		}
+        if (skin && !manager.preLoadAllCharacters)
+            skin.unloadTexture();
 		skin = manager.animations[name][skinName];
 		skin.loadTexture();
 		if (!manager.animations[name][skinName].anims.ContainsKey("Walk"))
@@ -640,6 +642,12 @@ class AnimatedObject extends Object
 			return;
 		}
 	}
+
+    function onCharacterDestroy()
+    {
+        if (skin && !manager.preLoadAllCharacters)
+            skin.unloadTexture();
+    }
 
 	function run(animation : String)
 	{

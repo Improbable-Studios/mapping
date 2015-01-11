@@ -312,6 +312,7 @@ class MainPlayerScript extends MonoBehaviour
 			{
 				yield fadeOutRoom(roomObject);
                 roomObject.SetActive(false);
+                mapManager.onLeaveRoom(roomObject);
                 GameData.instance.current.room = room;
 				roomObject = mapManager.getRoomObject();
 			}

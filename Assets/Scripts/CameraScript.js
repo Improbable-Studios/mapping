@@ -87,6 +87,8 @@ function getCaptureRect()
 
 function setOverlayBlending(flag : boolean)
 {
+    if (!MapManagerScript.shaderOutput)
+        return;
     MapManagerScript.shaderOutput.SetActive(flag);
     camera.cullingMask = 0;
     for (l in layers)
