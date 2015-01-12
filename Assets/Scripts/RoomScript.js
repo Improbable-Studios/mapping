@@ -18,7 +18,7 @@ class DoorObject extends Object
     var openSFXFromStart : boolean;
     var closeSFXFromStart : boolean;
     var defaultSFXPrefix = "SFX/Entrances/";
-    
+        
     function DoorObject(room_ : RoomScript, gameObject_ : GameObject, sr_ : SpriteRenderer, anim_ : AnimationItem, coords : String, sfx : String[])
     {
         room = room_;
@@ -150,6 +150,7 @@ class RoomScript extends MonoBehaviour
     var config : Dictionary.<String, String>;
 
 	private var path : String;
+    private var ready : boolean;
 
 	private var obstacles = Dictionary.<String, String>();
 	private var objects = Dictionary.<String, String>();
@@ -178,8 +179,8 @@ class RoomScript extends MonoBehaviour
 	function OnEnable()
 	{
         // Check that script is loaded, and play the room sounds
-		if (collisionMask == null)
-			return;
+        if (!ready || !path || path == "")
+            return;
         playBGM();
 
         // Set the collision mask
@@ -203,7 +204,7 @@ class RoomScript extends MonoBehaviour
 
     function OnDisable()
     {
-        if (collisionMask == null)
+        if (!ready || !path || path == "")
             return;
 
         CameraScript.instance.setOverlayBlending(false);
@@ -221,6 +222,7 @@ class RoomScript extends MonoBehaviour
 	function initialise(path_ : String)
 	{
 		path = path_;
+        ready = false;
         resource = ResourceManagerScript.instance;
         manager = MapManagerScript.instance;
 
@@ -376,6 +378,11 @@ class RoomScript extends MonoBehaviour
     function getPath()
     {
         return path;
+    }
+
+    function setReady(flag : boolean)
+    {
+        ready = flag;
     }
 
 	function playBGM()

@@ -114,12 +114,14 @@ class MapManagerScript extends MonoBehaviour
 		}
 		else
 			script = r.GetComponent(RoomScript);
+        script.setReady(false);
 		script.collisionMask = collisionTexture;
 		script.config = config;
 		script.initialise(resourcePrefix);
 		r.SetActive(false);
 		r.transform.parent = roomsObject.transform;
 		r.name = roomName;
+        script.setReady(true);
 		return r;
 	}
 
@@ -235,10 +237,13 @@ class MapManagerScript extends MonoBehaviour
 
     function disableCharacters()
     {
-        if (preLoadAllMaps)
+        if (AnimationManagerScript.instance.preLoadAllCharacters)
         {
             for (var c in characters.Values)
-                c.SetActive(false);
+            {
+                if (c)
+                    c.SetActive(false);
+            }
         }
         else
         {
@@ -247,7 +252,7 @@ class MapManagerScript extends MonoBehaviour
                 var c = characters[k];
                 characters.Remove(k);
                 characterScripts.Remove(k);
-                Destroy(c);
+                DestroyImmediate(c);
              }
         }
     }

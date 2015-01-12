@@ -53,8 +53,6 @@ class AudioManagerScript extends MonoBehaviour
 
     function playBGM(name : String, volume : float)
     {
-        for (k in audioClips.Values)
-            Debug.Log("PREVIOUS: " + k.name);
         StopCoroutine("playBGM");
         var previousClip = bgmPlayer.clip;
         var clip = getAudioClip(name);
@@ -65,8 +63,6 @@ class AudioManagerScript extends MonoBehaviour
                 yield;
             removeClip(previousClip);
         }
-        for (k in audioClips.Values)
-            Debug.Log("AFTER: " + k.name);
     }
 
     function playAmbiances(names : String[], volumes : float[])
